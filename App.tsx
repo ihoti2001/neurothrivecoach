@@ -1,5 +1,6 @@
 import React from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import Home from './pages/Home';
 import About from './pages/About';
 import Services from './pages/Services';
@@ -23,20 +24,23 @@ const ScrollToTop = () => {
 
 const App: React.FC = () => {
   return (
-    <HashRouter>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<Layout><Home /></Layout>} />
-        <Route path="/about" element={<Layout><About /></Layout>} />
-        <Route path="/services" element={<Layout><Services /></Layout>} />
-        <Route path="/contact" element={<Layout><Contact /></Layout>} />
-        <Route path="/privacy-policy" element={<Layout><PrivacyPolicy /></Layout>} />
-        <Route path="/terms-of-service" element={<Layout><TermsOfService /></Layout>} />
-        {/* Booking flows usually have a different or minimized layout, but for simplicity we keep basic layout or custom headers inside the page */}
-        <Route path="/booking-options" element={<BookingOptions />} />
-        <Route path="/booking-calendar" element={<BookingCalendar />} />
-      </Routes>
-    </HashRouter>
+    <>
+      <HashRouter>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/" element={<Layout><Home /></Layout>} />
+          <Route path="/about" element={<Layout><About /></Layout>} />
+          <Route path="/services" element={<Layout><Services /></Layout>} />
+          <Route path="/contact" element={<Layout><Contact /></Layout>} />
+          <Route path="/privacy-policy" element={<Layout><PrivacyPolicy /></Layout>} />
+          <Route path="/terms-of-service" element={<Layout><TermsOfService /></Layout>} />
+          {/* Booking flows usually have a different or minimized layout, but for simplicity we keep basic layout or custom headers inside the page */}
+          <Route path="/booking-options" element={<BookingOptions />} />
+          <Route path="/booking-calendar" element={<BookingCalendar />} />
+        </Routes>
+      </HashRouter>
+      <Analytics />
+    </>
   );
 };
 

@@ -1,21 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getBookingLink } from '../utils/calApi';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
-    const [bookingUrl, setBookingUrl] = useState('');
-
-    useEffect(() => {
-        getBookingLink().then(setBookingUrl);
-    }, []);
     
     const handleBooking = () => {
-        if (bookingUrl) {
-            window.location.href = bookingUrl;
-        } else {
-            navigate('/booking-options');
-        }
+        navigate('/services');
     };
 
     return (

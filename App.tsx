@@ -1,5 +1,6 @@
 import React from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import Home from './pages/Home';
 import About from './pages/About';
 import Services from './pages/Services';
@@ -36,6 +37,7 @@ const App: React.FC = () => {
         <Route path="/booking-options" element={<BookingOptions />} />
         <Route path="/booking-calendar" element={<BookingCalendar />} />
       </Routes>
+      <Analytics />
     </HashRouter>
   );
 };

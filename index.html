@@ -3,7 +3,14 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Neuro Thrive Coach - ADHD Coaching</title>
+    <title>Neuro Thrive Coach | Professional ADHD Coaching in UK</title>
+    <meta name="description" content="Certified ADHD coach helping adults master executive function, time management, and emotional regulation. Book a free discovery call today. Online & In-person Canterbury."/>
+    <meta name="keywords" content="ADHD Coach, ADHD Coaching UK, Executive Function, Neurodiversity, Canterbury, Kent, Time Management, Adult ADHD"/>
+    <meta name="robots" content="index, follow"/>
+    <meta property="og:title" content="Neuro Thrive Coach - ADHD Coaching"/>
+    <meta property="og:description" content="Master your mind, embrace your potential. Professional coaching for neurodivergent brains."/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="/neuro_thrive_coach_logo_display.png"/>
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
@@ -82,18 +89,70 @@
             width: 6px;
         }
     </style>
+    
+    <!-- JSON-LD Schema for Local Business / Professional Service -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "Neuro Thrive Coach",
+      "image": "https://neurothrivecoach.co.uk/neuro_thrive_coach_logo_display.png",
+      "@id": "https://neurothrivecoach.co.uk",
+      "url": "https://neurothrivecoach.co.uk",
+      "telephone": "",
+      "email": "info@neurothrivecoach.co.uk",
+      "description": "Professional ADHD coaching platform helping individuals master executive function and embrace their potential. Specialized support for adults with ADHD in Canterbury and Online.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Canterbury",
+        "addressRegion": "Kent",
+        "addressCountry": "GB"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 51.2802,
+        "longitude": 1.0789
+      },
+      "priceRange": "£75 - £420",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "opens": "09:00",
+          "closes": "17:00"
+        }
+      ],
+      "knowsAbout": [
+        "ADHD Coaching",
+        "Executive Function",
+        "Time Management",
+        "Neurodiversity",
+        "Emotional Regulation"
+      ],
+      "areaServed": "United Kingdom"
+    }
+    </script>
 <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0"
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
 }
 </script>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-text-main dark:text-white antialiased">
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>

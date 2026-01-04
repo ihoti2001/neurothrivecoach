@@ -28,7 +28,7 @@ const About: React.FC = () => {
 
     const defaults = {
         hero_image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAclRqW7LuwOAkhv-YReiypfs5cpu665HhlnFs0fTXOCsownyM-xjeel-QPNPAAMy-beljfpI3zrftoVwuyfdsc-IeZ6Fkbva85c-wR80DZ08wolGglo3nyv8BKQIfliNnP_KRJD8tOEq8v2iLw2kTFPisjUjdYaM8L9rDpWc-3tjbp-bZoRhL_y63h0M6f4n-AircfIX4tj21twZvi_K-lPr5wPAsOIKQtDBfww2ZVl_neCPK3KQ8L2J2wSomHXKXmPx1E5rDJs2o",
-        headline: "Hi, I'm Alex. <br/>I help brains like ours thrive.",
+        headline: "Hi, I'm Sam. <br/>I help brains like ours thrive.",
         intro_text: "I’m a certified ADHD coach dedicated to helping you turn chaos into clarity. I don't believe in \"fixing\" you because you aren't broken. Let's work with your unique brain wiring, not against it.",
 
         philosophy_subhead: "My Philosophy",

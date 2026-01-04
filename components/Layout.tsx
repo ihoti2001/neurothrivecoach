@@ -1,23 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { getBookingLink } from '../utils/calApi';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 const Header: React.FC = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const location = useLocation();
-    const navigate = useNavigate();
-    const [bookingUrl, setBookingUrl] = useState('');
-
-    useEffect(() => {
-        getBookingLink().then(setBookingUrl);
-    }, []);
 
     const isActive = (path: string) => location.pathname === path;
 
-    const handleBooking = () => {
-        // Redirect to services page as requested
-        navigate('/services');
-    };
 
     return (
         <div className="sticky top-0 z-50 w-full bg-white/95 dark:bg-background-dark/95 backdrop-blur-sm shadow-sm transition-all duration-300">
@@ -39,9 +28,12 @@ const Header: React.FC = () => {
                                 <Link to="/blog" className={`text-lg font-bold leading-normal transition-colors ${isActive('/blog') ? 'text-primary' : 'text-text-main dark:text-gray-300 hover:text-primary'}`}>Blog</Link>
                                 <Link to="/contact" className={`text-lg font-bold leading-normal transition-colors ${isActive('/contact') ? 'text-primary' : 'text-text-main dark:text-gray-300 hover:text-primary'}`}>Contact</Link>
                             </nav>
-                            <button onClick={handleBooking} className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-primary hover:bg-primary-dark transition-colors text-white text-lg font-bold leading-normal tracking-[0.015em]">
+                            <Link
+                                to="/services"
+                                className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-primary hover:bg-primary-dark transition-colors text-white text-lg font-bold leading-normal tracking-[0.015em]"
+                            >
                                 <span className="truncate">Book Session</span>
-                            </button>
+                            </Link>
                         </div>
                         <div className="md:hidden flex items-center">
                             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-text-main dark:text-white">
@@ -57,7 +49,13 @@ const Header: React.FC = () => {
                             <Link to="/services" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white">Services</Link>
                             <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white">Blog</Link>
                             <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white">Contact</Link>
-                            <button onClick={() => { setMobileMenuOpen(false); handleBooking(); }} className="bg-primary text-white text-center py-3 rounded-lg font-bold text-lg">Book Session</button>
+                            <button
+                                data-cal-link="neurothrivecoach/25min"
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="bg-primary text-white text-center py-3 rounded-lg font-bold text-lg"
+                            >
+                                Book Session
+                            </button>
                         </div>
                     )}
                 </div>

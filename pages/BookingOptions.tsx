@@ -1,36 +1,35 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { getBookingLink } from '../utils/calApi';
+import { Link } from 'react-router-dom';
 
 const BookingOptions: React.FC = () => {
-    const navigate = useNavigate();
     const [freeUrl, setFreeUrl] = useState('');
     const [focusUrl, setFocusUrl] = useState('');
     const [bundleUrl, setBundleUrl] = useState('');
 
     useEffect(() => {
-        // Try to match specific event types for these cards
-        getBookingLink(['free', 'discovery', '15']).then(setFreeUrl);
-        getBookingLink(['focus', 'session', 'single']).then(setFocusUrl);
-        getBookingLink(['bundle', 'coaching']).then(setBundleUrl);
+        // Slugs for the Cal.com embed
+        setFreeUrl('neurothrivecoach/25min');
+        setFocusUrl('neurothrivecoach/45min');
+        setBundleUrl('neurothrivecoach/4-session-package');
+
+        // Refresh Cal.com to find new buttons after React render
+        if ((window as any).Cal) {
+            (window as any).Cal("ui", {
+                styles: { branding: { brandColor: "#338173" } },
+                hideEventTypeDetails: false,
+                layout: "month_view"
+            });
+        }
     }, []);
 
-    const handleBooking = (url: string) => {
-        if (url) {
-            window.location.href = url;
-        } else {
-            // Fallback
-            window.location.href = 'https://cal.com';
-        }
-    };
 
     return (
         <div className="relative flex min-h-screen w-full flex-col group/design-root overflow-x-hidden bg-background-light dark:bg-background-dark">
             <header className="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap bg-surface-light dark:bg-surface-dark px-6 py-4 lg:px-40 shadow-sm">
                 <Link to="/" className="flex items-center gap-4">
-                    <img 
-                        src="/neuro_thrive_coach_logo_display.png" 
-                        alt="Neuro Thrive Coach" 
+                    <img
+                        src="/neuro_thrive_coach_logo_display.png"
+                        alt="Neuro Thrive Coach"
                         className="h-10 md:h-12 w-auto object-contain"
                     />
                 </Link>
@@ -50,7 +49,7 @@ const BookingOptions: React.FC = () => {
                                 <p className="text-[#637c88] dark:text-gray-400 text-sm font-normal leading-normal">Redirecting to Cal.com for booking</p>
                             </div>
                             <div className="rounded-full bg-[#dce2e5] dark:bg-gray-700 h-2 overflow-hidden">
-                                <div className="h-full rounded-full bg-primary transition-all duration-500 ease-out" style={{width: '100%'}}></div>
+                                <div className="h-full rounded-full bg-primary transition-all duration-500 ease-out" style={{ width: '100%' }}></div>
                             </div>
                         </div>
                         <div className="flex flex-wrap justify-center gap-3 p-4 text-center mb-8">
@@ -88,7 +87,10 @@ const BookingOptions: React.FC = () => {
                                         <span>Virtual coffee atmosphere</span>
                                     </div>
                                 </div>
-                                <button onClick={() => handleBooking(freeUrl)} className="w-full cursor-pointer rounded-lg h-12 px-4 bg-[#f0f3f4] dark:bg-gray-700 hover:bg-[#e1e6e9] dark:hover:bg-gray-600 text-[#111518] dark:text-white text-base font-bold transition-colors">
+                                <button
+                                    data-cal-link={freeUrl || 'neurothrivecoach/25min'}
+                                    className="w-full cursor-pointer rounded-lg h-12 px-4 bg-[#f0f3f4] dark:bg-gray-700 hover:bg-[#e1e6e9] dark:hover:bg-gray-600 text-[#111518] dark:text-white text-base font-bold transition-colors"
+                                >
                                     Book Free Chat
                                 </button>
                             </div>
@@ -122,7 +124,10 @@ const BookingOptions: React.FC = () => {
                                         <span>Immediate takeaways</span>
                                     </div>
                                 </div>
-                                <button onClick={() => handleBooking(focusUrl)} className="w-full cursor-pointer rounded-lg h-12 px-4 bg-primary hover:bg-primary-dark text-white text-base font-bold shadow-md shadow-primary/20 transition-all">
+                                <button
+                                    data-cal-link={focusUrl || 'neurothrivecoach/45min'}
+                                    className="w-full cursor-pointer rounded-lg h-12 px-4 bg-primary hover:bg-primary-dark text-white text-base font-bold shadow-md shadow-primary/20 transition-all"
+                                >
                                     Book Single Session
                                 </button>
                             </div>
@@ -158,7 +163,10 @@ const BookingOptions: React.FC = () => {
                                         <span>Best long-term value</span>
                                     </div>
                                 </div>
-                                <button onClick={() => handleBooking(bundleUrl)} className="w-full cursor-pointer rounded-lg h-12 px-4 bg-[#f0f3f4] dark:bg-gray-700 hover:bg-[#e1e6e9] dark:hover:bg-gray-600 text-[#111518] dark:text-white text-base font-bold transition-colors">
+                                <button
+                                    data-cal-link={bundleUrl || 'neurothrivecoach/4-session-package'}
+                                    className="w-full cursor-pointer rounded-lg h-12 px-4 bg-[#f0f3f4] dark:bg-gray-700 hover:bg-[#e1e6e9] dark:hover:bg-gray-600 text-[#111518] dark:text-white text-base font-bold transition-colors"
+                                >
                                     View Packages
                                 </button>
                             </div>

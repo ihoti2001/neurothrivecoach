@@ -1,217 +1,244 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getBookingLink } from '../utils/calApi';
+import { } from 'react-router-dom';
+import butter from '../utils/buttercms';
 
 const Services: React.FC = () => {
-    const navigate = useNavigate();
     const [singleSessionUrl, setSingleSessionUrl] = useState('');
     const [kickstarterUrl, setKickstarterUrl] = useState('');
     const [transformationUrl, setTransformationUrl] = useState('');
-    const [generalUrl, setGeneralUrl] = useState('');
     const [discoveryUrl, setDiscoveryUrl] = useState('');
+    const [pageContent, setPageContent] = useState<any>(null);
+    const [modalUrl, setModalUrl] = useState<string | null>(null);
 
     useEffect(() => {
-        // Fetch booking links on mount
-        getBookingLink(['single', 'session', '45']).then(setSingleSessionUrl);
-        getBookingLink(['kickstarter', '4']).then(setKickstarterUrl);
-        getBookingLink(['transformation', '6']).then(setTransformationUrl);
-        // Specific link for free discovery call (15 mins)
-        getBookingLink(['free', '15', 'consultation', 'discovery']).then(setDiscoveryUrl);
-        getBookingLink().then(setGeneralUrl);
+        // Slugs for the Cal.com embed
+        setDiscoveryUrl('https://app.cal.eu/neurothrivecoach/25min?overlayCalendar=true');
+        setSingleSessionUrl('https://app.cal.eu/neurothrivecoach/45min?overlayCalendar=true');
+        setKickstarterUrl('https://app.cal.eu/neurothrivecoach/4-session-package?recurringEventCount=4&overlayCalendar=true');
+        setTransformationUrl('https://app.cal.eu/neurothrivecoach/6-session-package?recurringEventCount=4&overlayCalendar=true');
+
+        // Cal.com buttons now use onClick handlers
+
+        // Fetch ButterCMS content
+        const fetchServicesContent = async () => {
+            try {
+                const resp = await butter.page.retrieve('*', 'services');
+                if (resp && resp.data && resp.data.data) {
+                    setPageContent(resp.data.data);
+                }
+            } catch (error) {
+                console.log("Could not fetch Services content from ButterCMS, using default.", error);
+            }
+        };
+        fetchServicesContent();
     }, []);
 
-    const handleBooking = (url: string) => {
-        if (url) {
-            window.location.href = url;
-        } else {
-            // Fallback
-            window.location.href = 'https://cal.com';
-        }
+
+    const defaults = {
+        title: "Services & Pricing",
+        subtitle: "Flexible ADHD coaching options to support your journey. Start with a free consultation, then choose what works best for you.",
+
+        // Discovery Call
+        service_1_title: "Free Discovery Call",
+        service_1_price: "FREE",
+        service_1_duration: "15 minutes",
+        service_1_features: "Get to know each other\nDiscuss your goals and challenges\nLearn about my coaching approach\nAsk any questions you have\nNo obligation to continue",
+        service_1_button: "Book Now",
+
+        // Single Session
+        service_2_title: "Single Session",
+        service_2_price: "£75",
+        service_2_duration: "per 45-min session",
+        service_2_features: "Focused 45-minute coaching session\nPersonalised strategies and tools\nAction plan for immediate implementation\nOnline via Google Meet\nOptional in-person (Canterbury area)\nFlexible scheduling",
+        service_2_button: "Book Now",
+
+        // 4-Session Package
+        service_3_title: "4-Session Package",
+        service_3_price_old: "£300",
+        service_3_price: "£280",
+        service_3_price_detail: "£70 per session",
+        service_3_features: "Save £20 on individual sessions\nFour 45-minute coaching sessions\nComprehensive progress tracking\nEmail support between sessions\nWorkbooks and resources included\nValid for 3 months",
+        service_3_button: "Book Now",
+
+        // 6-Session Package
+        service_4_badge: "Best Value",
+        service_4_title: "6-Session Package",
+        service_4_price_old: "£450",
+        service_4_price: "£420",
+        service_4_price_detail: "£70 per session",
+        service_4_features: "Best value - Save £30\nSix 45-minute coaching sessions\nIn-depth transformation programme\nPriority email support\nCustom resources and toolkits\nValid for 4 months",
+        service_4_button: "Book Now",
+
+        banner_text: "<span class=\"font-bold\">Not sure which option is right for you?</span> Book a free discovery call and we'll discuss the best path forward.",
+
+        expect_title: "What to Expect in Your Sessions",
+        expect_intro: "Every coaching session is tailored to your unique needs and goals.",
+
+        expect_1_title: "1. Check-In & Goal Setting (5-10 mins)",
+        expect_1_text: "We start each session by reviewing progress since our last meeting and setting intentions for today's focus.",
+
+        expect_2_title: "2. Exploration & Strategy Development (25-30 mins)",
+        expect_2_text: "The heart of our work together. We explore challenges, celebrate wins, and develop practical strategies tailored to your ADHD brain and lifestyle.",
+
+        expect_3_title: "3. Action Planning & Commitment (5-10 mins)",
+        expect_3_text: "We wrap up with a clear action plan—specific, achievable steps you'll take before our next session.",
+
+        delivery_title: "Session Delivery Options",
+        delivery_intro: "Choose the format that works best for your lifestyle and preferences.",
+
+        delivery_1_title: "Online Sessions",
+        delivery_1_text: "Available to clients across the UK via Google Meet. All you need is a computer or smartphone with internet connection.",
+
+        delivery_2_title: "In-Person Sessions",
+        delivery_2_text: "Available within 25 miles of Canterbury, Kent. Meet in a comfortable, confidential setting at a mutually convenient location.",
+
+        delivery_3_title: "Flexible Scheduling",
+        delivery_3_text: "Evening and weekend appointments available to accommodate work schedules and family commitments.",
+
+        delivery_4_title: "Confidential & Safe",
+        delivery_4_text: "Your privacy is paramount. All sessions are completely confidential and conducted in a judgment-free environment.",
+
+        benefit_title: "Who Can Benefit from Coaching?",
+
+        benefit_1_title: "Adults with ADHD",
+        benefit_1_list: "Struggling with time management and organization\nRecently diagnosed and seeking support\nManaging work/life balance challenges\nBuilding sustainable routines and habits\nNavigating relationships and communication",
+
+        benefit_2_title: "Parents of Neurodivergent Children",
+        benefit_2_list: "Supporting children with ADHD or autism\nUnderstanding neurodivergent needs\nNavigating school systems and accommodations\nManaging challenging behaviours with compassion\nBuilding strong family relationships",
+
+        faq_title: "Frequently Asked Questions",
+
+        faq_1_q: "Do I need a formal ADHD diagnosis to work with you?",
+        faq_1_a: "No. While many of my clients have a formal diagnosis, coaching can benefit anyone who identifies with ADHD traits or neurodivergent thinking patterns.",
+
+        faq_2_q: "How is coaching different from therapy?",
+        faq_2_a: "Coaching focuses on the present and future—setting goals, developing strategies, and creating action plans. Therapy typically explores past experiences and mental health treatment. Both are valuable, and can complement each other.",
+
+        faq_3_q: "How many sessions will I need?",
+        faq_3_a: "This varies by individual. Some clients achieve their goals in 4-6 sessions, while others prefer ongoing support. We'll discuss what's right for you during your free consultation.",
+
+        faq_4_q: "What's your cancellation policy?",
+        faq_4_a: "Please provide at least 24 hours notice to cancel or reschedule. Cancellations with less than 24 hours notice will be charged at the full session rate."
+    };
+
+    // Merge defaults with pageContent fields to ensure all required fields exist
+    const content = { ...defaults, ...(pageContent?.fields || {}) };
+
+    const renderList = (text: string) => {
+        if (!text || typeof text !== 'string') return null;
+        return text.split('\n').filter(item => item.trim() !== '').map((item, idx) => (
+            <li key={idx} className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
+                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
+                <span>{item}</span>
+            </li>
+        ));
+    };
+
+    const renderBenefitList = (text: string) => {
+        if (!text || typeof text !== 'string') return null;
+        return text.split('\n').filter(item => item.trim() !== '').map((item, idx) => (
+            <li key={idx} className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
+                <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
+                <span>{item}</span>
+            </li>
+        ));
     };
 
     return (
         <div className="w-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-sans">
-            
+
             {/* Header Section */}
             <div className="w-full pt-16 pb-12 px-4 text-center">
                 <h1 className="text-4xl md:text-5xl font-black mb-4 text-[#111518] dark:text-white tracking-tight">
-                    Services & Pricing
+                    {content.title}
                 </h1>
                 <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
-                    Flexible ADHD coaching options to support your journey. Start with a free consultation, then choose what works best for you.
+                    {content.subtitle}
                 </p>
             </div>
 
             {/* Pricing Cards Section */}
             <div className="max-w-7xl mx-auto px-4 md:px-8 mb-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
-                    
+
                     {/* Free Discovery Call */}
                     <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col h-full hover:shadow-md transition-shadow">
-                        <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white">Free Discovery Call</h3>
+                        <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white">{content.service_1_title}</h3>
                         <div className="flex items-baseline gap-1 mb-2">
-                            <span className="text-3xl font-black text-primary">FREE</span>
-                            <span className="text-sm text-gray-500 font-medium ml-1">15 minutes</span>
+                            <span className="text-3xl font-black text-primary">{content.service_1_price}</span>
+                            <span className="text-sm text-gray-500 font-medium ml-1">{content.service_1_duration}</span>
                         </div>
                         <div className="h-px bg-gray-100 dark:bg-gray-800 w-full my-4"></div>
                         <ul className="space-y-3 mb-8 flex-1">
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Get to know each other</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Discuss your goals and challenges</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Learn about my coaching approach</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Ask any questions you have</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>No obligation to continue</span>
-                            </li>
+                            {renderList(content.service_1_features)}
                         </ul>
-                        <button 
-                            onClick={() => handleBooking(discoveryUrl || generalUrl)} 
+                        <button
+                            onClick={() => setModalUrl(discoveryUrl)}
                             className="w-full py-3 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-[#111518] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         >
-                            Book Now
+                            {content.service_1_button}
                         </button>
                     </div>
 
                     {/* Single Session */}
                     <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col h-full hover:shadow-md transition-shadow">
-                        <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white">Single Session</h3>
+                        <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white">{content.service_2_title}</h3>
                         <div className="flex items-baseline gap-1 mb-2">
-                            <span className="text-3xl font-black text-primary">£75</span>
-                            <span className="text-sm text-gray-500 font-medium ml-1">per 45-min session</span>
+                            <span className="text-3xl font-black text-primary">{content.service_2_price}</span>
+                            <span className="text-sm text-gray-500 font-medium ml-1">{content.service_2_duration}</span>
                         </div>
                         <div className="h-px bg-gray-100 dark:bg-gray-800 w-full my-4"></div>
                         <ul className="space-y-3 mb-8 flex-1">
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Focused 45-minute coaching session</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Personalised strategies and tools</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Action plan for immediate implementation</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Online via Google Meet</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Optional in-person (Canterbury area)</span>
-                            </li>
-                             <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Flexible scheduling</span>
-                            </li>
+                            {renderList(content.service_2_features)}
                         </ul>
-                        <button 
-                            onClick={() => handleBooking(singleSessionUrl)} 
+                        <button
+                            onClick={() => setModalUrl(singleSessionUrl)}
                             className="w-full py-3 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-[#111518] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         >
-                            Book Now
+                            {content.service_2_button}
                         </button>
                     </div>
 
                     {/* 4-Session Package */}
                     <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col h-full hover:shadow-md transition-shadow">
-                        <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white">4-Session Package</h3>
+                        <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white">{content.service_3_title}</h3>
                         <div className="flex items-baseline gap-2 mb-2">
-                            <span className="text-sm text-gray-400 line-through">£300</span>
-                            <span className="text-3xl font-black text-primary">£280</span>
-                            <span className="text-sm text-gray-500 font-medium">£70 per session</span>
+                            <span className="text-sm text-gray-400 line-through">{content.service_3_price_old}</span>
+                            <span className="text-3xl font-black text-primary">{content.service_3_price}</span>
+                            <span className="text-sm text-gray-500 font-medium">{content.service_3_price_detail}</span>
                         </div>
                         <div className="h-px bg-gray-100 dark:bg-gray-800 w-full my-4"></div>
                         <ul className="space-y-3 mb-8 flex-1">
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Save £20 on individual sessions</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Four 45-minute coaching sessions</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Comprehensive progress tracking</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Email support between sessions</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Workbooks and resources included</span>
-                            </li>
-                             <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Valid for 3 months</span>
-                            </li>
+                            {renderList(content.service_3_features)}
                         </ul>
-                        <button 
-                            onClick={() => handleBooking(kickstarterUrl)} 
+                        <button
+                            onClick={() => setModalUrl(kickstarterUrl)}
                             className="w-full py-3 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-[#111518] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         >
-                            Book Now
+                            {content.service_3_button}
                         </button>
                     </div>
 
                     {/* 6-Session Package */}
                     <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-md border-2 border-primary/20 flex flex-col h-full relative transform lg:-translate-y-2">
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#ccfbf1] text-primary-dark text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                            Best Value
+                            {content.service_4_badge}
                         </div>
-                        <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white mt-1">6-Session Package</h3>
+                        <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white mt-1">{content.service_4_title}</h3>
                         <div className="flex items-baseline gap-2 mb-2">
-                             <span className="text-sm text-gray-400 line-through">£450</span>
-                            <span className="text-3xl font-black text-primary">£420</span>
-                            <span className="text-sm text-gray-500 font-medium">£70 per session</span>
+                            <span className="text-sm text-gray-400 line-through">{content.service_4_price_old}</span>
+                            <span className="text-3xl font-black text-primary">{content.service_4_price}</span>
+                            <span className="text-sm text-gray-500 font-medium">{content.service_4_price_detail}</span>
                         </div>
                         <div className="h-px bg-gray-100 dark:bg-gray-800 w-full my-4"></div>
                         <ul className="space-y-3 mb-8 flex-1">
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Best value - Save £30</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Six 45-minute coaching sessions</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>In-depth transformation programme</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Priority email support</span>
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Custom resources and toolkits</span>
-                            </li>
-                             <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
-                                <span>Valid for 4 months</span>
-                            </li>
+                            {renderList(content.service_4_features)}
                         </ul>
-                        <button 
-                            onClick={() => handleBooking(transformationUrl)} 
+                        <button
+                            onClick={() => setModalUrl(transformationUrl)}
                             className="w-full py-3 rounded-lg bg-primary hover:bg-primary-dark text-white font-bold transition-colors shadow-sm"
                         >
-                            Book Now
+                            {content.service_4_button}
                         </button>
                     </div>
 
@@ -221,34 +248,33 @@ const Services: React.FC = () => {
             {/* Banner */}
             <div className="bg-gray-50 dark:bg-[#1a262d] py-6 px-4 mb-20">
                 <div className="max-w-4xl mx-auto text-center">
-                     <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base">
-                        <span className="font-bold">Not sure which option is right for you?</span> Book a free discovery call and we'll discuss the best path forward.
+                    <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base" dangerouslySetInnerHTML={{ __html: content.banner_text }}>
                     </p>
                 </div>
             </div>
 
             {/* What to Expect */}
             <div className="max-w-3xl mx-auto px-4 mb-24">
-                <h2 className="text-3xl font-bold text-center mb-4 text-[#111518] dark:text-white">What to Expect in Your Sessions</h2>
-                <p className="text-center text-gray-600 dark:text-gray-400 mb-10">Every coaching session is tailored to your unique needs and goals.</p>
-                
+                <h2 className="text-3xl font-bold text-center mb-4 text-[#111518] dark:text-white">{content.expect_title}</h2>
+                <p className="text-center text-gray-600 dark:text-gray-400 mb-10">{content.expect_intro}</p>
+
                 <div className="space-y-4">
                     <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                        <h3 className="font-bold text-lg mb-2 text-[#111518] dark:text-white">1. Check-In & Goal Setting (5-10 mins)</h3>
+                        <h3 className="font-bold text-lg mb-2 text-[#111518] dark:text-white">{content.expect_1_title}</h3>
                         <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            We start each session by reviewing progress since our last meeting and setting intentions for today's focus.
+                            {content.expect_1_text}
                         </p>
                     </div>
                     <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                        <h3 className="font-bold text-lg mb-2 text-[#111518] dark:text-white">2. Exploration & Strategy Development (25-30 mins)</h3>
+                        <h3 className="font-bold text-lg mb-2 text-[#111518] dark:text-white">{content.expect_2_title}</h3>
                         <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            The heart of our work together. We explore challenges, celebrate wins, and develop practical strategies tailored to your ADHD brain and lifestyle.
+                            {content.expect_2_text}
                         </p>
                     </div>
                     <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                        <h3 className="font-bold text-lg mb-2 text-[#111518] dark:text-white">3. Action Planning & Commitment (5-10 mins)</h3>
+                        <h3 className="font-bold text-lg mb-2 text-[#111518] dark:text-white">{content.expect_3_title}</h3>
                         <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            We wrap up with a clear action plan—specific, achievable steps you'll take before our next session.
+                            {content.expect_3_text}
                         </p>
                     </div>
                 </div>
@@ -256,101 +282,63 @@ const Services: React.FC = () => {
 
             {/* Delivery Options */}
             <div className="max-w-7xl mx-auto px-4 mb-24 text-center">
-                 <h2 className="text-3xl font-bold mb-4 text-[#111518] dark:text-white">Session Delivery Options</h2>
-                 <p className="text-gray-600 dark:text-gray-400 mb-12">Choose the format that works best for your lifestyle and preferences.</p>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                     <div className="flex flex-col items-center gap-3">
-                         <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
-                             <span className="material-symbols-outlined text-3xl">videocam</span>
-                         </div>
-                         <h3 className="font-bold text-lg text-[#111518] dark:text-white">Online Sessions</h3>
-                         <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
-                            Available to clients across the UK via Google Meet. All you need is a computer or smartphone with internet connection.
-                         </p>
-                     </div>
-                     <div className="flex flex-col items-center gap-3">
-                         <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
-                             <span className="material-symbols-outlined text-3xl">location_on</span>
-                         </div>
-                         <h3 className="font-bold text-lg text-[#111518] dark:text-white">In-Person Sessions</h3>
-                         <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
-                            Available within 25 miles of Canterbury, Kent. Meet in a comfortable, confidential setting at a mutually convenient location.
-                         </p>
-                     </div>
-                     <div className="flex flex-col items-center gap-3">
-                         <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
-                             <span className="material-symbols-outlined text-3xl">schedule</span>
-                         </div>
-                         <h3 className="font-bold text-lg text-[#111518] dark:text-white">Flexible Scheduling</h3>
-                         <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
-                            Evening and weekend appointments available to accommodate work schedules and family commitments.
-                         </p>
-                     </div>
-                     <div className="flex flex-col items-center gap-3">
-                         <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
-                             <span className="material-symbols-outlined text-3xl">security</span>
-                         </div>
-                         <h3 className="font-bold text-lg text-[#111518] dark:text-white">Confidential & Safe</h3>
-                         <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
-                            Your privacy is paramount. All sessions are completely confidential and conducted in a judgment-free environment.
-                         </p>
-                     </div>
-                 </div>
+                <h2 className="text-3xl font-bold mb-4 text-[#111518] dark:text-white">{content.delivery_title}</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-12">{content.delivery_intro}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
+                            <span className="material-symbols-outlined text-3xl">videocam</span>
+                        </div>
+                        <h3 className="font-bold text-lg text-[#111518] dark:text-white">{content.delivery_1_title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
+                            {content.delivery_1_text}
+                        </p>
+                    </div>
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
+                            <span className="material-symbols-outlined text-3xl">location_on</span>
+                        </div>
+                        <h3 className="font-bold text-lg text-[#111518] dark:text-white">{content.delivery_2_title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
+                            {content.delivery_2_text}
+                        </p>
+                    </div>
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
+                            <span className="material-symbols-outlined text-3xl">schedule</span>
+                        </div>
+                        <h3 className="font-bold text-lg text-[#111518] dark:text-white">{content.delivery_3_title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
+                            {content.delivery_3_text}
+                        </p>
+                    </div>
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
+                            <span className="material-symbols-outlined text-3xl">security</span>
+                        </div>
+                        <h3 className="font-bold text-lg text-[#111518] dark:text-white">{content.delivery_4_title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
+                            {content.delivery_4_text}
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Who Can Benefit */}
             <div className="w-full bg-background-light dark:bg-background-dark pb-24">
                 <div className="max-w-5xl mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-center mb-12 text-[#111518] dark:text-white">Who Can Benefit from Coaching?</h2>
+                    <h2 className="text-3xl font-bold text-center mb-12 text-[#111518] dark:text-white">{content.benefit_title}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="bg-white dark:bg-surface-dark p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                            <h3 className="text-xl font-bold text-primary mb-6">Adults with ADHD</h3>
+                            <h3 className="text-xl font-bold text-primary mb-6">{content.benefit_1_title}</h3>
                             <ul className="space-y-4">
-                                <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                    <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
-                                    <span>Struggling with time management and organization</span>
-                                </li>
-                                <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                    <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
-                                    <span>Recently diagnosed and seeking support</span>
-                                </li>
-                                <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                    <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
-                                    <span>Managing work/life balance challenges</span>
-                                </li>
-                                <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                    <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
-                                    <span>Building sustainable routines and habits</span>
-                                </li>
-                                <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                    <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
-                                    <span>Navigating relationships and communication</span>
-                                </li>
+                                {renderBenefitList(content.benefit_1_list)}
                             </ul>
                         </div>
                         <div className="bg-white dark:bg-surface-dark p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                            <h3 className="text-xl font-bold text-primary mb-6">Parents of Neurodivergent Children</h3>
+                            <h3 className="text-xl font-bold text-primary mb-6">{content.benefit_2_title}</h3>
                             <ul className="space-y-4">
-                                <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                    <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
-                                    <span>Supporting children with ADHD or autism</span>
-                                </li>
-                                <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                    <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
-                                    <span>Understanding neurodivergent needs</span>
-                                </li>
-                                <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                    <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
-                                    <span>Navigating school systems and accommodations</span>
-                                </li>
-                                <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                    <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
-                                    <span>Managing challenging behaviours with compassion</span>
-                                </li>
-                                <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                    <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
-                                    <span>Building strong family relationships</span>
-                                </li>
+                                {renderBenefitList(content.benefit_2_list)}
                             </ul>
                         </div>
                     </div>
@@ -359,49 +347,68 @@ const Services: React.FC = () => {
 
             {/* FAQ Section */}
             <div id="faq" className="max-w-4xl mx-auto px-4 pb-24">
-                <h2 className="text-3xl font-bold text-center mb-10 text-[#111518] dark:text-white">Frequently Asked Questions</h2>
+                <h2 className="text-3xl font-bold text-center mb-10 text-[#111518] dark:text-white">{content.faq_title}</h2>
                 <div className="flex flex-col gap-4">
                     <details className="group bg-white dark:bg-surface-dark rounded-xl border-l-4 border-transparent open:border-primary p-2 transition-all duration-200">
                         <summary className="flex cursor-pointer items-center justify-between p-4 font-bold text-[#111518] dark:text-white select-none">
-                            <span>Do I need a formal ADHD diagnosis to work with you?</span>
+                            <span>{content.faq_1_q}</span>
                             <span className="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
                         </summary>
                         <div className="px-4 pb-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            No. While many of my clients have a formal diagnosis, coaching can benefit anyone who identifies with ADHD traits or neurodivergent thinking patterns.
-                        </div>
-                    </details>
-                    
-                    <details className="group bg-white dark:bg-surface-dark rounded-xl border-l-4 border-transparent open:border-primary p-2 transition-all duration-200">
-                        <summary className="flex cursor-pointer items-center justify-between p-4 font-bold text-[#111518] dark:text-white select-none">
-                            <span>How is coaching different from therapy?</span>
-                            <span className="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
-                        </summary>
-                        <div className="px-4 pb-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            Coaching focuses on the present and future—setting goals, developing strategies, and creating action plans. Therapy typically explores past experiences and mental health treatment. Both are valuable, and can complement each other.
+                            {content.faq_1_a}
                         </div>
                     </details>
 
                     <details className="group bg-white dark:bg-surface-dark rounded-xl border-l-4 border-transparent open:border-primary p-2 transition-all duration-200">
                         <summary className="flex cursor-pointer items-center justify-between p-4 font-bold text-[#111518] dark:text-white select-none">
-                            <span>How many sessions will I need?</span>
+                            <span>{content.faq_2_q}</span>
                             <span className="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
                         </summary>
                         <div className="px-4 pb-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            This varies by individual. Some clients achieve their goals in 4-6 sessions, while others prefer ongoing support. We'll discuss what's right for you during your free consultation.
+                            {content.faq_2_a}
                         </div>
                     </details>
 
                     <details className="group bg-white dark:bg-surface-dark rounded-xl border-l-4 border-transparent open:border-primary p-2 transition-all duration-200">
                         <summary className="flex cursor-pointer items-center justify-between p-4 font-bold text-[#111518] dark:text-white select-none">
-                            <span>What's your cancellation policy?</span>
+                            <span>{content.faq_3_q}</span>
                             <span className="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
                         </summary>
                         <div className="px-4 pb-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            Please provide at least 24 hours notice to cancel or reschedule. Cancellations with less than 24 hours notice will be charged at the full session rate.
+                            {content.faq_3_a}
+                        </div>
+                    </details>
+
+                    <details className="group bg-white dark:bg-surface-dark rounded-xl border-l-4 border-transparent open:border-primary p-2 transition-all duration-200">
+                        <summary className="flex cursor-pointer items-center justify-between p-4 font-bold text-[#111518] dark:text-white select-none">
+                            <span>{content.faq_4_q}</span>
+                            <span className="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
+                        </summary>
+                        <div className="px-4 pb-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                            {content.faq_4_a}
                         </div>
                     </details>
                 </div>
             </div>
+
+            {/* Booking Modal */}
+            {modalUrl && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="relative w-full max-w-4xl h-full max-h-[90vh] bg-white dark:bg-surface-dark rounded-lg shadow-lg">
+                        <button
+                            onClick={() => setModalUrl(null)}
+                            className="absolute top-4 right-4 z-10 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 text-2xl"
+                        >
+                            ×
+                        </button>
+                        <iframe
+                            src={modalUrl}
+                            className="w-full h-full rounded-lg"
+                            title="Book Session"
+                        />
+                    </div>
+                </div>
+            )}
 
         </div>
     );

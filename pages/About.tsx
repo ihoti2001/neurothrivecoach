@@ -10,7 +10,7 @@ const About: React.FC = () => {
     useEffect(() => {
         const fetchAboutContent = async () => {
             try {
-                const resp = await butter.page.retrieve('*', 'about');
+                const resp = await butter.page.retrieve('page', 'about');
                 if (resp && resp.data && resp.data.data) {
                     setPageContent(resp.data.data);
                 }

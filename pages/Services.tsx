@@ -22,7 +22,7 @@ const Services: React.FC = () => {
         // Fetch ButterCMS content
         const fetchServicesContent = async () => {
             try {
-                const resp = await butter.page.retrieve('*', 'services');
+                const resp = await butter.page.retrieve('page', 'services');
                 if (resp && resp.data && resp.data.data) {
                     setPageContent(resp.data.data);
                 }

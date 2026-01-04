@@ -11,7 +11,7 @@ const BookingCalendar: React.FC = () => {
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-4">
                         <img 
-                            src="/neuro_thrive_coach_logo_display.png" 
+                            src="/logo.png" 
                             alt="Neuro Thrive Coach" 
                             className="h-10 md:h-12 w-auto object-contain"
                         />

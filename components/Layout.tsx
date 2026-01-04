@@ -15,7 +15,7 @@ const Header: React.FC = () => {
                     <header className="flex items-center justify-between whitespace-nowrap gap-4">
                         <Link to="/" className="flex items-center gap-3 shrink-0">
                             <img
-                                src="/neuro_thrive_coach_logo_display.png"
+                                src="/logo.png"
                                 alt="Neuro Thrive Coach"
                                 className="h-12 md:h-16 w-auto object-contain"
                             />
@@ -68,7 +68,7 @@ const Footer: React.FC = () => (
             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                 <Link to="/" className="flex items-center gap-3">
                     <img
-                        src="/neuro_thrive_coach_logo_display.png"
+                        src="/logo.png"
                         alt="Neuro Thrive Coach"
                         className="h-10 md:h-12 w-auto object-contain"
                     />

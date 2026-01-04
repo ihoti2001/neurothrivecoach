@@ -28,7 +28,7 @@ const BookingOptions: React.FC = () => {
             <header className="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap bg-surface-light dark:bg-surface-dark px-6 py-4 lg:px-40 shadow-sm">
                 <Link to="/" className="flex items-center gap-4">
                     <img
-                        src="/neuro_thrive_coach_logo_display.png"
+                        src="/logo.png"
                         alt="Neuro Thrive Coach"
                         className="h-10 md:h-12 w-auto object-contain"
                     />

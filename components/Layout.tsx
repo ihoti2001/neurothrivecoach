@@ -25,7 +25,6 @@ const Header: React.FC = () => {
                                 <Link to="/" className={`text-lg font-bold leading-normal transition-colors ${isActive('/') ? 'text-primary' : 'text-text-main dark:text-gray-300 hover:text-primary'}`}>Home</Link>
                                 <Link to="/about" className={`text-lg font-bold leading-normal transition-colors ${isActive('/about') ? 'text-primary' : 'text-text-main dark:text-gray-300 hover:text-primary'}`}>About</Link>
                                 <Link to="/services" className={`text-lg font-bold leading-normal transition-colors ${isActive('/services') ? 'text-primary' : 'text-text-main dark:text-gray-300 hover:text-primary'}`}>Services</Link>
-                                <Link to="/blog" className={`text-lg font-bold leading-normal transition-colors ${isActive('/blog') ? 'text-primary' : 'text-text-main dark:text-gray-300 hover:text-primary'}`}>Blog</Link>
                                 <Link to="/contact" className={`text-lg font-bold leading-normal transition-colors ${isActive('/contact') ? 'text-primary' : 'text-text-main dark:text-gray-300 hover:text-primary'}`}>Contact</Link>
                             </nav>
                             <Link
@@ -47,7 +46,6 @@ const Header: React.FC = () => {
                             <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white">Home</Link>
                             <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white">About</Link>
                             <Link to="/services" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white">Services</Link>
-                            <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white">Blog</Link>
                             <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white">Contact</Link>
                             <button
                                 data-cal-link="neurothrivecoach/25min"

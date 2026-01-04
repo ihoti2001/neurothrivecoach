@@ -9,6 +9,14 @@ const Home: React.FC = () => {
     useEffect(() => {
         const fetchHomeContent = async () => {
             try {
+                // Temporarily list all pages to see what's available
+                try {
+                    const listResp = await butter.page.list();
+                    console.log('Available ButterCMS pages:', listResp.data.data);
+                } catch (listError) {
+                    console.log('Error listing pages:', listError);
+                }
+
                 const resp = await butter.page.retrieve('*', 'home');
                 if (resp?.data?.data) {
                     setPageContent(resp.data.data);

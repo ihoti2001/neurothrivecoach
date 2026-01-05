@@ -1,25 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { fetchPageWithFallback } from '../utils/buttercms';
 
 const Contact: React.FC = () => {
-    const [pageContent, setPageContent] = useState<any>(null);
-
-    useEffect(() => {
-        const fetchContactContent = async () => {
-            try {
-                const page = await fetchPageWithFallback(['contact', 'contact_page', 'page'], 'contact');
-                if (page) {
-                    setPageContent(page);
-                }
-            } catch (error) {
-                console.log("Could not fetch Contact content from ButterCMS, using default.", error);
-            }
-        };
-
-        fetchContactContent();
-    }, []);
-
     const defaults = {
         title: "Let's Connect",
         subtitle: "Reaching out can be hard, but I'm here to help. Fill out the form below, and I'll get back to you within 48 hours.",
@@ -33,7 +15,7 @@ const Contact: React.FC = () => {
         privacy_body: "Your information is safe. I am the only one who reads these emails, and I treat them with strict confidentiality."
     };
 
-    const content = { ...defaults, ...(pageContent?.fields || {}) };
+    const content = { ...defaults };
     const formAction = `https://formsubmit.co/${content.form_email || defaults.form_email}`;
 
     return (

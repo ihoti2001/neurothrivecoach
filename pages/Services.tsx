@@ -1,18 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { fetchCollections, fetchPageWithFallback } from '../utils/buttercms';
 
 const Services: React.FC = () => {
     const [singleSessionUrl, setSingleSessionUrl] = useState('');
     const [kickstarterUrl, setKickstarterUrl] = useState('');
     const [transformationUrl, setTransformationUrl] = useState('');
     const [discoveryUrl, setDiscoveryUrl] = useState('');
-    const [pageContent, setPageContent] = useState<any>(null);
     const [modalUrl, setModalUrl] = useState<string | null>(null);
-    const [pricingPackages, setPricingPackages] = useState<any[]>([]);
-    const [sessionStructure, setSessionStructure] = useState<any[]>([]);
-    const [deliveryOptions, setDeliveryOptions] = useState<any[]>([]);
-    const [faqs, setFaqs] = useState<any[]>([]);
-    const [coachingBenefits, setCoachingBenefits] = useState<any[]>([]);
 
     useEffect(() => {
         // Slugs for the Cal.com embed
@@ -23,48 +16,6 @@ const Services: React.FC = () => {
 
         // Cal.com buttons now use onClick handlers
 
-        // Fetch ButterCMS content
-        const fetchServicesContent = async () => {
-            try {
-                const page = await fetchPageWithFallback(['services', 'services_page', 'page'], 'services');
-                if (page) {
-                    setPageContent(page);
-                }
-            } catch (error) {
-                console.log("Could not fetch Services content from ButterCMS, using default.", error);
-            }
-        };
-        fetchServicesContent();
-    }, []);
-
-    useEffect(() => {
-        const fetchServicesCollections = async () => {
-            const collections = await fetchCollections([
-                'pricing_packages',
-                'session_structure',
-                'delivery_options',
-                'faqs',
-                'coaching_benefits'
-            ]);
-
-            if (collections?.pricing_packages?.length) {
-                setPricingPackages(collections.pricing_packages);
-            }
-            if (collections?.session_structure?.length) {
-                setSessionStructure(collections.session_structure);
-            }
-            if (collections?.delivery_options?.length) {
-                setDeliveryOptions(collections.delivery_options);
-            }
-            if (collections?.faqs?.length) {
-                setFaqs(collections.faqs);
-            }
-            if (collections?.coaching_benefits?.length) {
-                setCoachingBenefits(collections.coaching_benefits);
-            }
-        };
-
-        fetchServicesCollections();
     }, []);
 
 
@@ -156,7 +107,7 @@ const Services: React.FC = () => {
     };
 
     // Merge defaults with pageContent fields to ensure all required fields exist
-    const content = { ...defaults, ...(pageContent?.fields || {}) };
+    const content = { ...defaults };
 
     const defaultPricing = [
         {
@@ -196,55 +147,27 @@ const Services: React.FC = () => {
         }
     ];
 
-    const pricingItems = pricingPackages.length ? pricingPackages : defaultPricing;
-    const sessionSteps = sessionStructure.length
-        ? sessionStructure
-        : [
-            { title: content.expect_1_title, description: content.expect_1_text },
-            { title: content.expect_2_title, description: content.expect_2_text },
-            { title: content.expect_3_title, description: content.expect_3_text }
-        ];
+    const pricingItems = defaultPricing;
+    const sessionSteps = [
+        { title: content.expect_1_title, description: content.expect_1_text },
+        { title: content.expect_2_title, description: content.expect_2_text },
+        { title: content.expect_3_title, description: content.expect_3_text }
+    ];
 
     const deliveryIcons = ['videocam', 'location_on', 'schedule', 'security'];
-    const deliveryItems = deliveryOptions.length
-        ? deliveryOptions.map((item: any, idx: number) => ({
-            title: item.title || item.name || '',
-            description: item.description || item.body || item.content || '',
-            icon: deliveryIcons[idx % deliveryIcons.length]
-        }))
-        : [
-            { title: content.delivery_1_title, description: content.delivery_1_text, icon: deliveryIcons[0] },
-            { title: content.delivery_2_title, description: content.delivery_2_text, icon: deliveryIcons[1] },
-            { title: content.delivery_3_title, description: content.delivery_3_text, icon: deliveryIcons[2] },
-            { title: content.delivery_4_title, description: content.delivery_4_text, icon: deliveryIcons[3] }
-        ];
+    const deliveryItems = [
+        { title: content.delivery_1_title, description: content.delivery_1_text, icon: deliveryIcons[0] },
+        { title: content.delivery_2_title, description: content.delivery_2_text, icon: deliveryIcons[1] },
+        { title: content.delivery_3_title, description: content.delivery_3_text, icon: deliveryIcons[2] },
+        { title: content.delivery_4_title, description: content.delivery_4_text, icon: deliveryIcons[3] }
+    ];
 
-    const faqItems = faqs.length
-        ? faqs.map((item: any) => ({
-            question: item.question || item.title || '',
-            answer: item.answer || item.answer_text || item.content || item.body || item.description || ''
-        }))
-        : [
-            { question: content.faq_1_q, answer: content.faq_1_a },
-            { question: content.faq_2_q, answer: content.faq_2_a },
-            { question: content.faq_3_q, answer: content.faq_3_a },
-            { question: content.faq_4_q, answer: content.faq_4_a }
-        ];
-
-    const benefitItems = coachingBenefits.length
-        ? coachingBenefits.map((item: any) => ({
-            title: item.title || item.name || '',
-            description: item.description || item.body || item.content || ''
-        }))
-        : [];
-
-    const benefitTitles = benefitItems.length
-        ? benefitItems.map(item => item.title).filter(Boolean)
-        : [];
-    const benefitMid = benefitTitles.length ? Math.ceil(benefitTitles.length / 2) : 0;
-    const benefitColumns = benefitTitles.length
-        ? [benefitTitles.slice(0, benefitMid), benefitTitles.slice(benefitMid)]
-        : [];
+    const faqItems = [
+        { question: content.faq_1_q, answer: content.faq_1_a },
+        { question: content.faq_2_q, answer: content.faq_2_a },
+        { question: content.faq_3_q, answer: content.faq_3_a },
+        { question: content.faq_4_q, answer: content.faq_4_a }
+    ];
 
     const renderList = (text: string) => {
         if (!text || typeof text !== 'string') return null;
@@ -386,27 +309,13 @@ const Services: React.FC = () => {
                         <div className="bg-white dark:bg-surface-dark p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
                             <h3 className="text-xl font-bold text-primary mb-6">{content.benefit_1_title}</h3>
                             <ul className="space-y-4">
-                                {benefitColumns.length
-                                    ? benefitColumns[0].map((item, idx) => (
-                                        <li key={`${item}-${idx}`} className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                            <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
-                                            <span>{item}</span>
-                                        </li>
-                                    ))
-                                    : renderBenefitList(content.benefit_1_list)}
+                                {renderBenefitList(content.benefit_1_list)}
                             </ul>
                         </div>
                         <div className="bg-white dark:bg-surface-dark p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
                             <h3 className="text-xl font-bold text-primary mb-6">{content.benefit_2_title}</h3>
                             <ul className="space-y-4">
-                                {benefitColumns.length
-                                    ? benefitColumns[1].map((item, idx) => (
-                                        <li key={`${item}-${idx}`} className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                            <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
-                                            <span>{item}</span>
-                                        </li>
-                                    ))
-                                    : renderBenefitList(content.benefit_2_list)}
+                                {renderBenefitList(content.benefit_2_list)}
                             </ul>
                         </div>
                     </div>

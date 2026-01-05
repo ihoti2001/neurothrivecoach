@@ -1,81 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchCollections, fetchPageWithFallback } from '../utils/buttercms';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
-    const [pageContent, setPageContent] = useState<any>(null);
-    const [servicesItems, setServicesItems] = useState<any[]>([]);
-    const [testimonials, setTestimonials] = useState<any[]>([]);
-    const [homeConfig, setHomeConfig] = useState<{ pageType?: string; slug?: string }>({});
-
-    useEffect(() => {
-        const fetchHomeContent = async () => {
-            try {
-                const envPageType = import.meta.env.VITE_BUTTER_HOME_PAGE_TYPE;
-                const envSlug = import.meta.env.VITE_BUTTER_HOME_PAGE_SLUG;
-                const pageTypes = homeConfig.pageType ? [homeConfig.pageType] : (envPageType ? [envPageType] : ['home', 'landing_page', 'page']);
-                const slugs = homeConfig.slug ? [homeConfig.slug] : (envSlug ? [envSlug] : ['home', 'landing-page', 'landing_page', 'index']);
-
-                for (const slug of slugs) {
-                    const page = await fetchPageWithFallback(pageTypes, slug);
-                    if (page) {
-                        setPageContent(page);
-                        return;
-                    }
-                }
-            } catch (error) {
-                console.log("Could not fetch Home content from ButterCMS, using default.", error);
-            }
-        };
-
-        fetchHomeContent();
-    }, [homeConfig.pageType, homeConfig.slug]);
-
-    useEffect(() => {
-        const fetchHomeCollections = async () => {
-            const collections = await fetchCollections(['services', 'testimonials']);
-            if (collections?.services?.length) {
-                setServicesItems(collections.services);
-            }
-            if (collections?.testimonials?.length) {
-                setTestimonials(collections.testimonials);
-            }
-        };
-
-        fetchHomeCollections();
-    }, []);
-
-    useEffect(() => {
-        const fetchHomeConfig = async () => {
-            const settings =
-                (await fetchPageWithFallback(['global_settings', 'page'], 'global-settings')) ||
-                (await fetchPageWithFallback(['global_settings', 'page'], 'global_settings'));
-            const fields = settings?.fields || {};
-            if (fields.home_page_type || fields.home_page_slug) {
-                setHomeConfig({
-                    pageType: fields.home_page_type || 'home',
-                    slug: fields.home_page_slug
-                });
-            }
-        };
-
-        fetchHomeConfig();
-    }, []);
 
     const handleBooking = () => {
-        if (content.hero_button_url) {
-            if (content.hero_button_url.startsWith('http')) {
-                window.location.href = content.hero_button_url;
-                return;
-            }
-            navigate(content.hero_button_url);
-            return;
-        }
         navigate('/services');
     };
-
-    const fields = pageContent?.fields || {};
 
     // Default content (Fallback)
     const defaults = {
@@ -108,21 +39,8 @@ const Home: React.FC = () => {
         client_3_image: "https://i.pravatar.cc/150?img=5"
     };
 
-    const hero = fields.hero || fields.hero_section || {};
-
     // Merge defaults with pageContent fields to ensure all required fields exist
-    const content = {
-        ...defaults,
-        ...fields,
-        hero_headline: hero.headline || fields.hero_headline || defaults.hero_headline,
-        hero_subheadline: hero.subheadline || fields.hero_subheadline || defaults.hero_subheadline,
-        hero_cta_text: hero.button_label || fields.hero_cta_text || defaults.hero_cta_text,
-        hero_button_url: hero.button_url || fields.hero_button_url || '',
-        hero_image: (hero.image && (hero.image.url || hero.image)) || fields.hero_image || defaults.hero_image,
-        intro_headline: fields.intro_title || fields.intro_headline || defaults.intro_headline,
-        intro_text: fields.intro_text || defaults.intro_text,
-        clients_headline: fields.clients_headline || fields.testimonials_title || defaults.clients_headline
-    };
+    const content = { ...defaults };
 
     // Optional: Show a loading spinner if you want to wait for CMS before showing anything.
     // For better UX, we might just show the default immediately while loading, or a skeleton.
@@ -136,20 +54,14 @@ const Home: React.FC = () => {
         { title: content.service_3_title, desc: content.service_3_desc, icon: 'self_improvement' }
     ];
 
-    const servicesCards = servicesItems.length
-        ? servicesItems.slice(0, 3).map((item: any, idx: number) => ({
-            title: item.title || item.name || defaultServices[idx]?.title || '',
-            desc: item.description || item.body || item.content || defaultServices[idx]?.desc || '',
-            icon: item.icon || defaultServices[idx]?.icon || 'psychology'
-        }))
-        : defaultServices;
+    const servicesCards = defaultServices;
 
     const defaultTestimonials = [
         { client_name: content.client_1_name, rating: 5, image: content.client_1_image, quote: content.client_1_quote },
         { client_name: content.client_2_name, rating: 5, image: content.client_2_image, quote: content.client_2_quote },
         { client_name: content.client_3_name, rating: 5, image: content.client_3_image, quote: content.client_3_quote }
     ];
-    const testimonialItems = testimonials.length ? testimonials : defaultTestimonials;
+    const testimonialItems = defaultTestimonials;
 
     const getImageUrl = (value: any) => {
         if (!value) return '';

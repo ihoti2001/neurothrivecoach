@@ -66,6 +66,63 @@ export async function fetchPageWithFallback(pageTypes: string[], slug: string) {
     return null;
 }
 
+async function listPageTypes() {
+    if (!apiKey) return [];
+    try {
+        const url = `${apiBase}/page_types/?auth_token=${apiKey}`;
+        const data = await fetchJson(url);
+        return data?.data || [];
+    } catch (error) {
+        if (debugEnabled) {
+            console.error('ButterCMS page types fetch failed', error);
+        }
+        return [];
+    }
+}
+
+async function listPagesForType(pageType: string) {
+    if (!apiKey) return [];
+    try {
+        const url = `${apiBase}/pages/${pageType}/?auth_token=${apiKey}`;
+        const data = await fetchJson(url);
+        return data?.data || [];
+    } catch (error) {
+        if (debugEnabled) {
+            console.error('ButterCMS pages list failed', { pageType, error });
+        }
+        return [];
+    }
+}
+
+export async function fetchPageByNameOrSlug(match: { names?: string[]; slugs?: string[] }) {
+    if (!apiKey) return null;
+
+    const names = (match.names || []).map(name => name.toLowerCase());
+    const slugs = (match.slugs || []).map(slug => slug.toLowerCase());
+    const pageTypes = await listPageTypes();
+
+    for (const pageType of pageTypes) {
+        const apiIdentifier = pageType.api_identifier || pageType.slug || pageType.name;
+        if (!apiIdentifier) continue;
+
+        const pages = await listPagesForType(apiIdentifier);
+        const found = pages.find((page: any) => {
+            const pageName = (page.name || '').toLowerCase();
+            const pageSlug = (page.slug || '').toLowerCase();
+            return (names.length && names.includes(pageName)) || (slugs.length && slugs.includes(pageSlug));
+        });
+
+        if (found?.slug) {
+            const result = await fetchPageWithFallback([apiIdentifier], found.slug);
+            if (result) {
+                return result;
+            }
+        }
+    }
+
+    return null;
+}
+
 export async function fetchCollections(keys: string[], params: Record<string, any> = {}) {
     if (!apiKey) return null;
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchCollections, fetchPageWithFallback } from '../utils/buttercms';
+import { fetchCollections, fetchPageByNameOrSlug, fetchPageWithFallback } from '../utils/buttercms';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -20,6 +20,15 @@ const Home: React.FC = () => {
                         setPageContent(page);
                         return;
                     }
+                }
+
+                const discovered = await fetchPageByNameOrSlug({
+                    names: ['Home', 'Landing Page'],
+                    slugs
+                });
+                if (discovered) {
+                    setPageContent(discovered);
+                    return;
                 }
             } catch (error) {
                 console.log("Could not fetch Home content from ButterCMS, using default.", error);

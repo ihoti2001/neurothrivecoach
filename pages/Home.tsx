@@ -38,8 +38,18 @@ const Home: React.FC = () => {
     }, []);
 
     const handleBooking = () => {
+        if (content.hero_button_url) {
+            if (content.hero_button_url.startsWith('http')) {
+                window.location.href = content.hero_button_url;
+                return;
+            }
+            navigate(content.hero_button_url);
+            return;
+        }
         navigate('/services');
     };
+
+    const fields = pageContent?.fields || {};
 
     // Default content (Fallback)
     const defaults = {
@@ -72,8 +82,21 @@ const Home: React.FC = () => {
         client_3_image: "https://i.pravatar.cc/150?img=5"
     };
 
+    const hero = fields.hero || fields.hero_section || {};
+
     // Merge defaults with pageContent fields to ensure all required fields exist
-    const content = { ...defaults, ...(pageContent?.fields || {}) };
+    const content = {
+        ...defaults,
+        ...fields,
+        hero_headline: hero.headline || fields.hero_headline || defaults.hero_headline,
+        hero_subheadline: hero.subheadline || fields.hero_subheadline || defaults.hero_subheadline,
+        hero_cta_text: hero.button_label || fields.hero_cta_text || defaults.hero_cta_text,
+        hero_button_url: hero.button_url || fields.hero_button_url || '',
+        hero_image: (hero.image && (hero.image.url || hero.image)) || fields.hero_image || defaults.hero_image,
+        intro_headline: fields.intro_title || fields.intro_headline || defaults.intro_headline,
+        intro_text: fields.intro_text || defaults.intro_text,
+        clients_headline: fields.clients_headline || fields.testimonials_title || defaults.clients_headline
+    };
 
     // Optional: Show a loading spinner if you want to wait for CMS before showing anything.
     // For better UX, we might just show the default immediately while loading, or a skeleton.

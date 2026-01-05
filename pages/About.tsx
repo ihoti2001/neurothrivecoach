@@ -67,14 +67,31 @@ Since then, I've devoted my career to understanding the neuroscience of ADHD. I 
         cred_3_desc: "University of California, specializing in cognitive behavioral approaches."
     };
 
+    const fields = pageContent?.fields || {};
+
     // Merge defaults with pageContent fields to ensure all required fields exist
-    const content = { ...defaults, ...(pageContent?.fields || {}) };
+    const content = {
+        ...defaults,
+        ...fields,
+        hero_image: fields.intro_image || fields.hero_image || defaults.hero_image,
+        headline: fields.intro_title || fields.headline || defaults.headline,
+        intro_text: fields.intro_text || defaults.intro_text,
+        philosophy_headline: fields.philosophy_title || defaults.philosophy_headline,
+        philosophy_intro: fields.philosophy_intro || defaults.philosophy_intro,
+        pillar_1_desc: fields.pillar_1_text || defaults.pillar_1_desc,
+        pillar_2_desc: fields.pillar_2_text || defaults.pillar_2_desc,
+        pillar_3_desc: fields.pillar_3_text || defaults.pillar_3_desc,
+        journey_title: fields.journey_title || defaults.journey_title,
+        journey_text: fields.journey_text || defaults.journey_text,
+        journey_image: fields.journey_image || defaults.journey_image,
+        credentials_title: fields.credential_title || defaults.credentials_title
+    };
 
     // Helper to render journey text paragraphs which we might get as a single blob or HTML
     const renderJourneyText = () => {
-        if (pageContent?.fields?.journey_text) {
+        if (fields.journey_text) {
             // If CMS returns HTML (Rich Text)
-            return <div dangerouslySetInnerHTML={{ __html: pageContent.fields.journey_text }} className="flex flex-col gap-4" />;
+            return <div dangerouslySetInnerHTML={{ __html: fields.journey_text }} className="flex flex-col gap-4" />;
         }
         // Fallback for hardcoded string with newlines
         return content.journey_text.split('\n\n').map((para: string, idx: number) => (

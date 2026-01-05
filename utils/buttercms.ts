@@ -2,6 +2,10 @@ import Butter from 'buttercms';
 
 const apiKey = import.meta.env.VITE_BUTTER_CMS_API_KEY;
 const apiBase = 'https://api.buttercms.com/v2';
+const debugEnabled =
+    typeof window !== 'undefined' &&
+    window.location &&
+    window.location.search.includes('cmsdebug=1');
 
 if (!apiKey) {
     console.error("VITE_BUTTER_CMS_API_KEY is not defined in the environment variables.");
@@ -10,11 +14,29 @@ if (!apiKey) {
 const butter = Butter(apiKey);
 
 async function fetchJson(url: string) {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+            Accept: 'application/json'
+        }
+    });
     if (!res.ok) {
+        let body = '';
+        try {
+            body = await res.text();
+        } catch (error) {
+            // ignore
+        }
+        if (debugEnabled) {
+            console.error('ButterCMS error', { url, status: res.status, body });
+        }
         throw new Error(`ButterCMS request failed: ${res.status}`);
     }
-    return res.json();
+    const data = await res.json();
+    if (debugEnabled) {
+        console.log('ButterCMS response', { url, data });
+    }
+    return data;
 }
 
 export async function fetchPageWithFallback(pageTypes: string[], slug: string) {

@@ -54,7 +54,7 @@ const Home: React.FC = () => {
             const fields = settings?.fields || {};
             if (fields.home_page_type || fields.home_page_slug) {
                 setHomeConfig({
-                    pageType: fields.home_page_type,
+                    pageType: fields.home_page_type || 'home',
                     slug: fields.home_page_slug
                 });
             }

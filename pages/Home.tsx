@@ -11,9 +11,15 @@ const Home: React.FC = () => {
     useEffect(() => {
         const fetchHomeContent = async () => {
             try {
-                const page = await fetchPageWithFallback(['home', 'landing_page', 'page'], 'home');
-                if (page) {
-                    setPageContent(page);
+                const pageTypes = ['home', 'landing_page', 'page'];
+                const slugs = ['home', 'landing-page', 'landing_page', 'index'];
+
+                for (const slug of slugs) {
+                    const page = await fetchPageWithFallback(pageTypes, slug);
+                    if (page) {
+                        setPageContent(page);
+                        return;
+                    }
                 }
             } catch (error) {
                 console.log("Could not fetch Home content from ButterCMS, using default.", error);

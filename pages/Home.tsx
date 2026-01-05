@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchCollections, fetchPageByNameOrSlug, fetchPageWithFallback } from '../utils/buttercms';
+import { fetchCollections, fetchPageWithFallback } from '../utils/buttercms';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
     const [pageContent, setPageContent] = useState<any>(null);
     const [servicesItems, setServicesItems] = useState<any[]>([]);
     const [testimonials, setTestimonials] = useState<any[]>([]);
+    const [homeConfig, setHomeConfig] = useState<{ pageType?: string; slug?: string }>({});
 
     useEffect(() => {
         const fetchHomeContent = async () => {
             try {
-                const pageTypes = ['home', 'landing_page', 'page'];
-                const slugs = ['home', 'landing-page', 'landing_page', 'index'];
+                const envPageType = import.meta.env.VITE_BUTTER_HOME_PAGE_TYPE;
+                const envSlug = import.meta.env.VITE_BUTTER_HOME_PAGE_SLUG;
+                const pageTypes = homeConfig.pageType ? [homeConfig.pageType] : (envPageType ? [envPageType] : ['home', 'landing_page', 'page']);
+                const slugs = homeConfig.slug ? [homeConfig.slug] : (envSlug ? [envSlug] : ['home', 'landing-page', 'landing_page', 'index']);
 
                 for (const slug of slugs) {
                     const page = await fetchPageWithFallback(pageTypes, slug);
@@ -21,22 +24,13 @@ const Home: React.FC = () => {
                         return;
                     }
                 }
-
-                const discovered = await fetchPageByNameOrSlug({
-                    names: ['Home', 'Landing Page'],
-                    slugs
-                });
-                if (discovered) {
-                    setPageContent(discovered);
-                    return;
-                }
             } catch (error) {
                 console.log("Could not fetch Home content from ButterCMS, using default.", error);
             }
         };
 
         fetchHomeContent();
-    }, []);
+    }, [homeConfig.pageType, homeConfig.slug]);
 
     useEffect(() => {
         const fetchHomeCollections = async () => {
@@ -50,6 +44,23 @@ const Home: React.FC = () => {
         };
 
         fetchHomeCollections();
+    }, []);
+
+    useEffect(() => {
+        const fetchHomeConfig = async () => {
+            const settings =
+                (await fetchPageWithFallback(['global_settings', 'page'], 'global-settings')) ||
+                (await fetchPageWithFallback(['global_settings', 'page'], 'global_settings'));
+            const fields = settings?.fields || {};
+            if (fields.home_page_type || fields.home_page_slug) {
+                setHomeConfig({
+                    pageType: fields.home_page_type,
+                    slug: fields.home_page_slug
+                });
+            }
+        };
+
+        fetchHomeConfig();
     }, []);
 
     const handleBooking = () => {

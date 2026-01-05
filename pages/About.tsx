@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import butter from '../utils/buttercms';
+import { fetchPageWithFallback } from '../utils/buttercms';
 
 const About: React.FC = () => {
     const navigate = useNavigate();
@@ -10,9 +10,9 @@ const About: React.FC = () => {
     useEffect(() => {
         const fetchAboutContent = async () => {
             try {
-                const resp = await butter.page.retrieve('page', 'about');
-                if (resp && resp.data && resp.data.data) {
-                    setPageContent(resp.data.data);
+                const page = await fetchPageWithFallback(['about', 'about_page', 'page'], 'about');
+                if (page) {
+                    setPageContent(page);
                 }
             } catch (error) {
                 console.log("Could not fetch About content from ButterCMS, using default.", error);

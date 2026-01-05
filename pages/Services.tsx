@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { } from 'react-router-dom';
-import butter from '../utils/buttercms';
+import { fetchCollections, fetchPageWithFallback } from '../utils/buttercms';
 
 const Services: React.FC = () => {
     const [singleSessionUrl, setSingleSessionUrl] = useState('');
@@ -9,6 +8,11 @@ const Services: React.FC = () => {
     const [discoveryUrl, setDiscoveryUrl] = useState('');
     const [pageContent, setPageContent] = useState<any>(null);
     const [modalUrl, setModalUrl] = useState<string | null>(null);
+    const [pricingPackages, setPricingPackages] = useState<any[]>([]);
+    const [sessionStructure, setSessionStructure] = useState<any[]>([]);
+    const [deliveryOptions, setDeliveryOptions] = useState<any[]>([]);
+    const [faqs, setFaqs] = useState<any[]>([]);
+    const [coachingBenefits, setCoachingBenefits] = useState<any[]>([]);
 
     useEffect(() => {
         // Slugs for the Cal.com embed
@@ -22,15 +26,45 @@ const Services: React.FC = () => {
         // Fetch ButterCMS content
         const fetchServicesContent = async () => {
             try {
-                const resp = await butter.page.retrieve('page', 'services');
-                if (resp && resp.data && resp.data.data) {
-                    setPageContent(resp.data.data);
+                const page = await fetchPageWithFallback(['services', 'services_page', 'page'], 'services');
+                if (page) {
+                    setPageContent(page);
                 }
             } catch (error) {
                 console.log("Could not fetch Services content from ButterCMS, using default.", error);
             }
         };
         fetchServicesContent();
+    }, []);
+
+    useEffect(() => {
+        const fetchServicesCollections = async () => {
+            const collections = await fetchCollections([
+                'pricing_packages',
+                'session_structure',
+                'delivery_options',
+                'faqs',
+                'coaching_benefits'
+            ]);
+
+            if (collections?.pricing_packages?.length) {
+                setPricingPackages(collections.pricing_packages);
+            }
+            if (collections?.session_structure?.length) {
+                setSessionStructure(collections.session_structure);
+            }
+            if (collections?.delivery_options?.length) {
+                setDeliveryOptions(collections.delivery_options);
+            }
+            if (collections?.faqs?.length) {
+                setFaqs(collections.faqs);
+            }
+            if (collections?.coaching_benefits?.length) {
+                setCoachingBenefits(collections.coaching_benefits);
+            }
+        };
+
+        fetchServicesCollections();
     }, []);
 
 
@@ -124,6 +158,94 @@ const Services: React.FC = () => {
     // Merge defaults with pageContent fields to ensure all required fields exist
     const content = { ...defaults, ...(pageContent?.fields || {}) };
 
+    const defaultPricing = [
+        {
+            title: content.service_1_title,
+            price: content.service_1_price,
+            duration: content.service_1_duration,
+            features: content.service_1_features,
+            cta_text: content.service_1_button,
+            is_featured: false
+        },
+        {
+            title: content.service_2_title,
+            price: content.service_2_price,
+            duration: content.service_2_duration,
+            features: content.service_2_features,
+            cta_text: content.service_2_button,
+            is_featured: false
+        },
+        {
+            title: content.service_3_title,
+            price: content.service_3_price,
+            price_old: content.service_3_price_old,
+            price_detail: content.service_3_price_detail,
+            features: content.service_3_features,
+            cta_text: content.service_3_button,
+            is_featured: false
+        },
+        {
+            title: content.service_4_title,
+            price: content.service_4_price,
+            price_old: content.service_4_price_old,
+            price_detail: content.service_4_price_detail,
+            features: content.service_4_features,
+            cta_text: content.service_4_button,
+            badge: content.service_4_badge,
+            is_featured: true
+        }
+    ];
+
+    const pricingItems = pricingPackages.length ? pricingPackages : defaultPricing;
+    const sessionSteps = sessionStructure.length
+        ? sessionStructure
+        : [
+            { title: content.expect_1_title, description: content.expect_1_text },
+            { title: content.expect_2_title, description: content.expect_2_text },
+            { title: content.expect_3_title, description: content.expect_3_text }
+        ];
+
+    const deliveryIcons = ['videocam', 'location_on', 'schedule', 'security'];
+    const deliveryItems = deliveryOptions.length
+        ? deliveryOptions.map((item: any, idx: number) => ({
+            title: item.title || item.name || '',
+            description: item.description || item.body || item.content || '',
+            icon: deliveryIcons[idx % deliveryIcons.length]
+        }))
+        : [
+            { title: content.delivery_1_title, description: content.delivery_1_text, icon: deliveryIcons[0] },
+            { title: content.delivery_2_title, description: content.delivery_2_text, icon: deliveryIcons[1] },
+            { title: content.delivery_3_title, description: content.delivery_3_text, icon: deliveryIcons[2] },
+            { title: content.delivery_4_title, description: content.delivery_4_text, icon: deliveryIcons[3] }
+        ];
+
+    const faqItems = faqs.length
+        ? faqs.map((item: any) => ({
+            question: item.question || item.title || '',
+            answer: item.answer || item.answer_text || item.content || item.body || item.description || ''
+        }))
+        : [
+            { question: content.faq_1_q, answer: content.faq_1_a },
+            { question: content.faq_2_q, answer: content.faq_2_a },
+            { question: content.faq_3_q, answer: content.faq_3_a },
+            { question: content.faq_4_q, answer: content.faq_4_a }
+        ];
+
+    const benefitItems = coachingBenefits.length
+        ? coachingBenefits.map((item: any) => ({
+            title: item.title || item.name || '',
+            description: item.description || item.body || item.content || ''
+        }))
+        : [];
+
+    const benefitTitles = benefitItems.length
+        ? benefitItems.map(item => item.title).filter(Boolean)
+        : [];
+    const benefitMid = benefitTitles.length ? Math.ceil(benefitTitles.length / 2) : 0;
+    const benefitColumns = benefitTitles.length
+        ? [benefitTitles.slice(0, benefitMid), benefitTitles.slice(benefitMid)]
+        : [];
+
     const renderList = (text: string) => {
         if (!text || typeof text !== 'string') return null;
         return text.split('\n').filter(item => item.trim() !== '').map((item, idx) => (
@@ -160,88 +282,49 @@ const Services: React.FC = () => {
             {/* Pricing Cards Section */}
             <div className="max-w-7xl mx-auto px-4 md:px-8 mb-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+                    {pricingItems.map((item: any, idx: number) => {
+                        const isFeatured = !!item.is_featured || !!item.featured || !!item.badge;
+                        const priceOld = item.price_old || item.old_price || '';
+                        const priceDetail = item.price_detail || '';
+                        const badgeText = item.badge || (isFeatured ? 'Best Value' : '');
+                        const ctaUrl = [discoveryUrl, singleSessionUrl, kickstarterUrl, transformationUrl][idx] || singleSessionUrl;
+                        const cardClass = isFeatured
+                            ? "bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-md border-2 border-primary/20 flex flex-col h-full relative transform lg:-translate-y-2"
+                            : "bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col h-full hover:shadow-md transition-shadow";
+                        const buttonClass = isFeatured
+                            ? "w-full py-3 rounded-lg bg-primary hover:bg-primary-dark text-white font-bold transition-colors shadow-sm"
+                            : "w-full py-3 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-[#111518] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors";
 
-                    {/* Free Discovery Call */}
-                    <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col h-full hover:shadow-md transition-shadow">
-                        <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white">{content.service_1_title}</h3>
-                        <div className="flex items-baseline gap-1 mb-2">
-                            <span className="text-3xl font-black text-primary">{content.service_1_price}</span>
-                            <span className="text-sm text-gray-500 font-medium ml-1">{content.service_1_duration}</span>
-                        </div>
-                        <div className="h-px bg-gray-100 dark:bg-gray-800 w-full my-4"></div>
-                        <ul className="space-y-3 mb-8 flex-1">
-                            {renderList(content.service_1_features)}
-                        </ul>
-                        <button
-                            onClick={() => setModalUrl(discoveryUrl)}
-                            className="w-full py-3 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-[#111518] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        >
-                            {content.service_1_button}
-                        </button>
-                    </div>
-
-                    {/* Single Session */}
-                    <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col h-full hover:shadow-md transition-shadow">
-                        <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white">{content.service_2_title}</h3>
-                        <div className="flex items-baseline gap-1 mb-2">
-                            <span className="text-3xl font-black text-primary">{content.service_2_price}</span>
-                            <span className="text-sm text-gray-500 font-medium ml-1">{content.service_2_duration}</span>
-                        </div>
-                        <div className="h-px bg-gray-100 dark:bg-gray-800 w-full my-4"></div>
-                        <ul className="space-y-3 mb-8 flex-1">
-                            {renderList(content.service_2_features)}
-                        </ul>
-                        <button
-                            onClick={() => setModalUrl(singleSessionUrl)}
-                            className="w-full py-3 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-[#111518] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        >
-                            {content.service_2_button}
-                        </button>
-                    </div>
-
-                    {/* 4-Session Package */}
-                    <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col h-full hover:shadow-md transition-shadow">
-                        <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white">{content.service_3_title}</h3>
-                        <div className="flex items-baseline gap-2 mb-2">
-                            <span className="text-sm text-gray-400 line-through">{content.service_3_price_old}</span>
-                            <span className="text-3xl font-black text-primary">{content.service_3_price}</span>
-                            <span className="text-sm text-gray-500 font-medium">{content.service_3_price_detail}</span>
-                        </div>
-                        <div className="h-px bg-gray-100 dark:bg-gray-800 w-full my-4"></div>
-                        <ul className="space-y-3 mb-8 flex-1">
-                            {renderList(content.service_3_features)}
-                        </ul>
-                        <button
-                            onClick={() => setModalUrl(kickstarterUrl)}
-                            className="w-full py-3 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-[#111518] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        >
-                            {content.service_3_button}
-                        </button>
-                    </div>
-
-                    {/* 6-Session Package */}
-                    <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-md border-2 border-primary/20 flex flex-col h-full relative transform lg:-translate-y-2">
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#ccfbf1] text-primary-dark text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                            {content.service_4_badge}
-                        </div>
-                        <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white mt-1">{content.service_4_title}</h3>
-                        <div className="flex items-baseline gap-2 mb-2">
-                            <span className="text-sm text-gray-400 line-through">{content.service_4_price_old}</span>
-                            <span className="text-3xl font-black text-primary">{content.service_4_price}</span>
-                            <span className="text-sm text-gray-500 font-medium">{content.service_4_price_detail}</span>
-                        </div>
-                        <div className="h-px bg-gray-100 dark:bg-gray-800 w-full my-4"></div>
-                        <ul className="space-y-3 mb-8 flex-1">
-                            {renderList(content.service_4_features)}
-                        </ul>
-                        <button
-                            onClick={() => setModalUrl(transformationUrl)}
-                            className="w-full py-3 rounded-lg bg-primary hover:bg-primary-dark text-white font-bold transition-colors shadow-sm"
-                        >
-                            {content.service_4_button}
-                        </button>
-                    </div>
-
+                        return (
+                            <div key={`${item.title || item.name}-${idx}`} className={cardClass}>
+                                {badgeText ? (
+                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#ccfbf1] text-primary-dark text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                        {badgeText}
+                                    </div>
+                                ) : null}
+                                <h3 className="font-bold text-xl mb-2 text-[#111518] dark:text-white">{item.title || item.name}</h3>
+                                <div className="flex items-baseline gap-2 mb-2 flex-wrap">
+                                    {priceOld ? (
+                                        <span className="text-sm text-gray-400 line-through">{priceOld}</span>
+                                    ) : null}
+                                    <span className="text-3xl font-black text-primary">{item.price || ''}</span>
+                                    {item.duration ? (
+                                        <span className="text-sm text-gray-500 font-medium">{item.duration}</span>
+                                    ) : null}
+                                    {priceDetail ? (
+                                        <span className="text-sm text-gray-500 font-medium">{priceDetail}</span>
+                                    ) : null}
+                                </div>
+                                <div className="h-px bg-gray-100 dark:bg-gray-800 w-full my-4"></div>
+                                <ul className="space-y-3 mb-8 flex-1">
+                                    {renderList(item.features || item.description || '')}
+                                </ul>
+                                <button onClick={() => setModalUrl(ctaUrl)} className={buttonClass}>
+                                    {item.cta_text || item.button || 'Book Now'}
+                                </button>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -259,24 +342,20 @@ const Services: React.FC = () => {
                 <p className="text-center text-gray-600 dark:text-gray-400 mb-10">{content.expect_intro}</p>
 
                 <div className="space-y-4">
-                    <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                        <h3 className="font-bold text-lg mb-2 text-[#111518] dark:text-white">{content.expect_1_title}</h3>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            {content.expect_1_text}
-                        </p>
-                    </div>
-                    <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                        <h3 className="font-bold text-lg mb-2 text-[#111518] dark:text-white">{content.expect_2_title}</h3>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            {content.expect_2_text}
-                        </p>
-                    </div>
-                    <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                        <h3 className="font-bold text-lg mb-2 text-[#111518] dark:text-white">{content.expect_3_title}</h3>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            {content.expect_3_text}
-                        </p>
-                    </div>
+                    {sessionSteps.map((item: any, idx: number) => {
+                        const stepNumber = item.step_number || item.step || '';
+                        const duration = item.duration ? ` (${item.duration})` : '';
+                        const title = item.title || item.heading || (stepNumber ? `${stepNumber}. Session Step${duration}` : `Session Step${duration}`);
+                        const description = item.description || item.body || item.content || item.text || '';
+                        return (
+                            <div key={`${title}-${idx}`} className="bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+                                <h3 className="font-bold text-lg mb-2 text-[#111518] dark:text-white">{title}</h3>
+                                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                                    {description}
+                                </p>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -285,42 +364,17 @@ const Services: React.FC = () => {
                 <h2 className="text-3xl font-bold mb-4 text-[#111518] dark:text-white">{content.delivery_title}</h2>
                 <p className="text-gray-600 dark:text-gray-400 mb-12">{content.delivery_intro}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
-                            <span className="material-symbols-outlined text-3xl">videocam</span>
+                    {deliveryItems.map((item, idx) => (
+                        <div key={`${item.title}-${idx}`} className="flex flex-col items-center gap-3">
+                            <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
+                                <span className="material-symbols-outlined text-3xl">{item.icon}</span>
+                            </div>
+                            <h3 className="font-bold text-lg text-[#111518] dark:text-white">{item.title}</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
+                                {item.description}
+                            </p>
                         </div>
-                        <h3 className="font-bold text-lg text-[#111518] dark:text-white">{content.delivery_1_title}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
-                            {content.delivery_1_text}
-                        </p>
-                    </div>
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
-                            <span className="material-symbols-outlined text-3xl">location_on</span>
-                        </div>
-                        <h3 className="font-bold text-lg text-[#111518] dark:text-white">{content.delivery_2_title}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
-                            {content.delivery_2_text}
-                        </p>
-                    </div>
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
-                            <span className="material-symbols-outlined text-3xl">schedule</span>
-                        </div>
-                        <h3 className="font-bold text-lg text-[#111518] dark:text-white">{content.delivery_3_title}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
-                            {content.delivery_3_text}
-                        </p>
-                    </div>
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="size-16 rounded-full bg-primary text-white flex items-center justify-center mb-2">
-                            <span className="material-symbols-outlined text-3xl">security</span>
-                        </div>
-                        <h3 className="font-bold text-lg text-[#111518] dark:text-white">{content.delivery_4_title}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-[250px]">
-                            {content.delivery_4_text}
-                        </p>
-                    </div>
+                    ))}
                 </div>
             </div>
 
@@ -332,13 +386,27 @@ const Services: React.FC = () => {
                         <div className="bg-white dark:bg-surface-dark p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
                             <h3 className="text-xl font-bold text-primary mb-6">{content.benefit_1_title}</h3>
                             <ul className="space-y-4">
-                                {renderBenefitList(content.benefit_1_list)}
+                                {benefitColumns.length
+                                    ? benefitColumns[0].map((item, idx) => (
+                                        <li key={`${item}-${idx}`} className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
+                                            <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
+                                            <span>{item}</span>
+                                        </li>
+                                    ))
+                                    : renderBenefitList(content.benefit_1_list)}
                             </ul>
                         </div>
                         <div className="bg-white dark:bg-surface-dark p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
                             <h3 className="text-xl font-bold text-primary mb-6">{content.benefit_2_title}</h3>
                             <ul className="space-y-4">
-                                {renderBenefitList(content.benefit_2_list)}
+                                {benefitColumns.length
+                                    ? benefitColumns[1].map((item, idx) => (
+                                        <li key={`${item}-${idx}`} className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
+                                            <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
+                                            <span>{item}</span>
+                                        </li>
+                                    ))
+                                    : renderBenefitList(content.benefit_2_list)}
                             </ul>
                         </div>
                     </div>
@@ -349,45 +417,17 @@ const Services: React.FC = () => {
             <div id="faq" className="max-w-4xl mx-auto px-4 pb-24">
                 <h2 className="text-3xl font-bold text-center mb-10 text-[#111518] dark:text-white">{content.faq_title}</h2>
                 <div className="flex flex-col gap-4">
-                    <details className="group bg-white dark:bg-surface-dark rounded-xl border-l-4 border-transparent open:border-primary p-2 transition-all duration-200">
-                        <summary className="flex cursor-pointer items-center justify-between p-4 font-bold text-[#111518] dark:text-white select-none">
-                            <span>{content.faq_1_q}</span>
-                            <span className="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
-                        </summary>
-                        <div className="px-4 pb-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            {content.faq_1_a}
-                        </div>
-                    </details>
-
-                    <details className="group bg-white dark:bg-surface-dark rounded-xl border-l-4 border-transparent open:border-primary p-2 transition-all duration-200">
-                        <summary className="flex cursor-pointer items-center justify-between p-4 font-bold text-[#111518] dark:text-white select-none">
-                            <span>{content.faq_2_q}</span>
-                            <span className="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
-                        </summary>
-                        <div className="px-4 pb-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            {content.faq_2_a}
-                        </div>
-                    </details>
-
-                    <details className="group bg-white dark:bg-surface-dark rounded-xl border-l-4 border-transparent open:border-primary p-2 transition-all duration-200">
-                        <summary className="flex cursor-pointer items-center justify-between p-4 font-bold text-[#111518] dark:text-white select-none">
-                            <span>{content.faq_3_q}</span>
-                            <span className="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
-                        </summary>
-                        <div className="px-4 pb-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            {content.faq_3_a}
-                        </div>
-                    </details>
-
-                    <details className="group bg-white dark:bg-surface-dark rounded-xl border-l-4 border-transparent open:border-primary p-2 transition-all duration-200">
-                        <summary className="flex cursor-pointer items-center justify-between p-4 font-bold text-[#111518] dark:text-white select-none">
-                            <span>{content.faq_4_q}</span>
-                            <span className="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
-                        </summary>
-                        <div className="px-4 pb-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                            {content.faq_4_a}
-                        </div>
-                    </details>
+                    {faqItems.map((item, idx) => (
+                        <details key={`${item.question}-${idx}`} className="group bg-white dark:bg-surface-dark rounded-xl border-l-4 border-transparent open:border-primary p-2 transition-all duration-200">
+                            <summary className="flex cursor-pointer items-center justify-between p-4 font-bold text-[#111518] dark:text-white select-none">
+                                <span>{item.question}</span>
+                                <span className="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
+                            </summary>
+                            <div className="px-4 pb-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                                {item.answer}
+                            </div>
+                        </details>
+                    ))}
                 </div>
             </div>
 
@@ -399,7 +439,7 @@ const Services: React.FC = () => {
                             onClick={() => setModalUrl(null)}
                             className="absolute top-4 right-4 z-10 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 text-2xl"
                         >
-                            ×
+                            X
                         </button>
                         <iframe
                             src={modalUrl}

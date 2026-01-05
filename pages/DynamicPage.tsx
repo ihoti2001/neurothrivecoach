@@ -42,13 +42,13 @@ const DynamicPage: React.FC = () => {
         fetchPage();
     }, [type, slug]);
 
-    if (loading) return <div className="text-center py-20 text-text-primary text-xl">Loading page...</div>;
+    if (loading) return <div className="text-center py-20 text-primary text-xl">Loading page...</div>;
     if (error || !page) return <div className="text-center py-20 text-red-500 text-xl">{error || "Page not found"}</div>;
 
     return (
-        <div className="bg-bg-light min-h-screen py-20 px-6">
+        <div className="bg-background-light dark:bg-background-dark min-h-screen py-20 px-6 text-text-main dark:text-white">
             <div className="max-w-4xl mx-auto">
-                <h1 className="text-4xl md:text-5xl font-heading font-bold text-primary mb-6">
+                <h1 className="text-4xl md:text-5xl font-display font-bold text-primary mb-6">
                     {page.name || page.fields.headline || "Untitled Page"}
                 </h1>
 

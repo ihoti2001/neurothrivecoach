@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import butter from '../utils/buttercms';
+import { fetchCollections, fetchPageWithFallback } from '../utils/buttercms';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
     const [pageContent, setPageContent] = useState<any>(null);
+    const [servicesItems, setServicesItems] = useState<any[]>([]);
+    const [testimonials, setTestimonials] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchHomeContent = async () => {
             try {
-                const resp = await butter.page.retrieve('page', 'home');
-                if (resp?.data?.data) {
-                    setPageContent(resp.data.data);
+                const page = await fetchPageWithFallback(['home', 'landing_page', 'page'], 'home');
+                if (page) {
+                    setPageContent(page);
                 }
             } catch (error) {
                 console.log("Could not fetch Home content from ButterCMS, using default.", error);
@@ -19,6 +21,20 @@ const Home: React.FC = () => {
         };
 
         fetchHomeContent();
+    }, []);
+
+    useEffect(() => {
+        const fetchHomeCollections = async () => {
+            const collections = await fetchCollections(['services', 'testimonials']);
+            if (collections?.services?.length) {
+                setServicesItems(collections.services);
+            }
+            if (collections?.testimonials?.length) {
+                setTestimonials(collections.testimonials);
+            }
+        };
+
+        fetchHomeCollections();
     }, []);
 
     const handleBooking = () => {
@@ -65,6 +81,33 @@ const Home: React.FC = () => {
     // To prevent layout shift, we can use the 'loading' state if desired.
     // For now, we render using 'content' which defaults to hardcoded values if not found.
 
+    const defaultServices = [
+        { title: content.service_1_title, desc: content.service_1_desc, icon: 'psychology' },
+        { title: content.service_2_title, desc: content.service_2_desc, icon: 'schedule' },
+        { title: content.service_3_title, desc: content.service_3_desc, icon: 'self_improvement' }
+    ];
+
+    const servicesCards = servicesItems.length
+        ? servicesItems.slice(0, 3).map((item: any, idx: number) => ({
+            title: item.title || item.name || defaultServices[idx]?.title || '',
+            desc: item.description || item.body || item.content || defaultServices[idx]?.desc || '',
+            icon: item.icon || defaultServices[idx]?.icon || 'psychology'
+        }))
+        : defaultServices;
+
+    const defaultTestimonials = [
+        { client_name: content.client_1_name, rating: 5, image: content.client_1_image, quote: content.client_1_quote },
+        { client_name: content.client_2_name, rating: 5, image: content.client_2_image, quote: content.client_2_quote },
+        { client_name: content.client_3_name, rating: 5, image: content.client_3_image, quote: content.client_3_quote }
+    ];
+    const testimonialItems = testimonials.length ? testimonials : defaultTestimonials;
+
+    const getImageUrl = (value: any) => {
+        if (!value) return '';
+        if (typeof value === 'string') return value;
+        return value.url || value.src || '';
+    };
+
     return (
         <>
             <section className="w-full max-w-[1280px] px-4 md:px-10 py-12 md:py-20">
@@ -103,39 +146,19 @@ const Home: React.FC = () => {
                             </p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="flex flex-col gap-4 rounded-3xl bg-background-light dark:bg-background-dark p-8 shadow-sm hover:shadow-md transition-all">
-                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-                                    <span className="material-symbols-outlined text-[28px]">psychology</span>
+                            {servicesCards.map((item, idx) => (
+                                <div key={`${item.title}-${idx}`} className="flex flex-col gap-4 rounded-3xl bg-background-light dark:bg-background-dark p-8 shadow-sm hover:shadow-md transition-all">
+                                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
+                                        <span className="material-symbols-outlined text-[28px]">{item.icon || 'psychology'}</span>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <h3 className="text-text-main dark:text-white text-xl font-bold leading-tight">{item.title}</h3>
+                                        <p className="text-text-muted dark:text-gray-400 text-base leading-relaxed">
+                                            {item.desc}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col gap-2">
-                                    <h3 className="text-text-main dark:text-white text-xl font-bold leading-tight">{content.service_1_title}</h3>
-                                    <p className="text-text-muted dark:text-gray-400 text-base leading-relaxed">
-                                        {content.service_1_desc}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-4 rounded-3xl bg-background-light dark:bg-background-dark p-8 shadow-sm hover:shadow-md transition-all">
-                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-                                    <span className="material-symbols-outlined text-[28px]">schedule</span>
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <h3 className="text-text-main dark:text-white text-xl font-bold leading-tight">{content.service_2_title}</h3>
-                                    <p className="text-text-muted dark:text-gray-400 text-base leading-relaxed">
-                                        {content.service_2_desc}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-4 rounded-3xl bg-background-light dark:bg-background-dark p-8 shadow-sm hover:shadow-md transition-all">
-                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-                                    <span className="material-symbols-outlined text-[28px]">self_improvement</span>
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <h3 className="text-text-main dark:text-white text-xl font-bold leading-tight">{content.service_3_title}</h3>
-                                    <p className="text-text-muted dark:text-gray-400 text-base leading-relaxed">
-                                        {content.service_3_desc}
-                                    </p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -147,68 +170,39 @@ const Home: React.FC = () => {
                         <h2 className="text-text-main dark:text-white text-2xl font-bold">{content.clients_headline}</h2>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Card 1 */}
-                        <div className="bg-white dark:bg-[#162228] p-8 rounded-3xl shadow-sm h-full hover:shadow-md transition-all">
-                            <div className="flex flex-col gap-6 h-full">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-center bg-no-repeat bg-cover rounded-full size-14 shadow-inner shrink-0" style={{ backgroundImage: `url('${content.client_1_image}')` }}>
-                                    </div>
-                                    <div>
-                                        <p className="text-text-main dark:text-white text-lg font-bold leading-normal">{content.client_1_name}</p>
-                                        <div className="flex gap-0.5 text-[#F59E0B]">
-                                            {[1, 2, 3, 4, 5].map(i => (
-                                                <span key={i} className="material-symbols-outlined text-[18px] fill-current">star</span>
-                                            ))}
+                        {testimonialItems.slice(0, 3).map((item: any, idx: number) => {
+                            const rating = Number.parseInt(item.rating, 10) || 5;
+                            const imageUrl = getImageUrl(item.image);
+                            const quote =
+                                item.quote ||
+                                item.testimonial ||
+                                item.content ||
+                                item.body ||
+                                item.description ||
+                                defaultTestimonials[idx]?.quote ||
+                                '';
+                            return (
+                                <div key={`${item.client_name || item.name}-${idx}`} className="bg-white dark:bg-[#162228] p-8 rounded-3xl shadow-sm h-full hover:shadow-md transition-all">
+                                    <div className="flex flex-col gap-6 h-full">
+                                        <div className="flex items-center gap-4">
+                                            <div className="bg-center bg-no-repeat bg-cover rounded-full size-14 shadow-inner shrink-0" style={{ backgroundImage: `url('${imageUrl}')` }}>
+                                            </div>
+                                            <div>
+                                                <p className="text-text-main dark:text-white text-lg font-bold leading-normal">{item.client_name || item.name}</p>
+                                                <div className="flex gap-0.5 text-[#F59E0B]">
+                                                    {[...Array(Math.max(rating, 1))].map((_, i) => (
+                                                        <span key={i} className="material-symbols-outlined text-[18px] fill-current">star</span>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </div>
+                                        <blockquote className="text-text-main dark:text-gray-200 text-lg md:text-xl italic font-medium leading-relaxed">
+                                            "{quote}"
+                                        </blockquote>
                                     </div>
                                 </div>
-                                <blockquote className="text-text-main dark:text-gray-200 text-lg md:text-xl italic font-medium leading-relaxed">
-                                    "{content.client_1_quote}"
-                                </blockquote>
-                            </div>
-                        </div>
-
-                        {/* Card 2 */}
-                        <div className="bg-white dark:bg-[#162228] p-8 rounded-3xl shadow-sm h-full hover:shadow-md transition-all">
-                            <div className="flex flex-col gap-6 h-full">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-center bg-no-repeat bg-cover rounded-full size-14 shadow-inner shrink-0" style={{ backgroundImage: `url('${content.client_2_image}')` }}>
-                                    </div>
-                                    <div>
-                                        <p className="text-text-main dark:text-white text-lg font-bold leading-normal">{content.client_2_name}</p>
-                                        <div className="flex gap-0.5 text-[#F59E0B]">
-                                            {[1, 2, 3, 4, 5].map(i => (
-                                                <span key={i} className="material-symbols-outlined text-[18px] fill-current">star</span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                                <blockquote className="text-text-main dark:text-gray-200 text-lg md:text-xl italic font-medium leading-relaxed">
-                                    "{content.client_2_quote}"
-                                </blockquote>
-                            </div>
-                        </div>
-
-                        {/* Card 3 */}
-                        <div className="bg-white dark:bg-[#162228] p-8 rounded-3xl shadow-sm h-full hover:shadow-md transition-all">
-                            <div className="flex flex-col gap-6 h-full">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-center bg-no-repeat bg-cover rounded-full size-14 shadow-inner shrink-0" style={{ backgroundImage: `url('${content.client_3_image}')` }}>
-                                    </div>
-                                    <div>
-                                        <p className="text-text-main dark:text-white text-lg font-bold leading-normal">{content.client_3_name}</p>
-                                        <div className="flex gap-0.5 text-[#F59E0B]">
-                                            {[1, 2, 3, 4, 5].map(i => (
-                                                <span key={i} className="material-symbols-outlined text-[18px] fill-current">star</span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                                <blockquote className="text-text-main dark:text-gray-200 text-lg md:text-xl italic font-medium leading-relaxed">
-                                    "{content.client_3_quote}"
-                                </blockquote>
-                            </div>
-                        </div>
+                            );
+                        })}
                     </div>
                 </div>
             </section>

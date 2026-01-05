@@ -1,17 +1,51 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { fetchPageWithFallback } from '../utils/buttercms';
 
 const Contact: React.FC = () => {
+    const [pageContent, setPageContent] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchContactContent = async () => {
+            try {
+                const page = await fetchPageWithFallback(['contact', 'contact_page', 'page'], 'contact');
+                if (page) {
+                    setPageContent(page);
+                }
+            } catch (error) {
+                console.log("Could not fetch Contact content from ButterCMS, using default.", error);
+            }
+        };
+
+        fetchContactContent();
+    }, []);
+
+    const defaults = {
+        title: "Let's Connect",
+        subtitle: "Reaching out can be hard, but I'm here to help. Fill out the form below, and I'll get back to you within 48 hours.",
+        form_subject: "New Contact Form Submission",
+        form_email: "neurothrivecoach@gmail.com",
+        direct_email: "info@neurothrivecoach.co.uk",
+        pre_faq_title: "Before you ask...",
+        pre_faq_body: "I've compiled a list of common questions about my coaching style, pricing, and insurance. Checking here first might save you time!",
+        pre_faq_link_text: "View Frequently Asked Questions",
+        privacy_title: "Privacy First",
+        privacy_body: "Your information is safe. I am the only one who reads these emails, and I treat them with strict confidentiality."
+    };
+
+    const content = { ...defaults, ...(pageContent?.fields || {}) };
+    const formAction = `https://formsubmit.co/${content.form_email || defaults.form_email}`;
+
     return (
         <div className="flex-grow layout-container flex flex-col items-center py-8 md:py-12 px-4 md:px-10">
             <div className="layout-content-container flex flex-col max-w-[1080px] w-full flex-1 gap-10">
                 {/* Header Section */}
                 <div className="flex flex-col gap-4 max-w-2xl">
                     <h1 className="text-[#111518] dark:text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
-                        Let's Connect
+                        {content.title}
                     </h1>
                     <p className="text-[#637c88] dark:text-slate-400 text-lg font-normal leading-relaxed">
-                        Reaching out can be hard, but I'm here to help. Fill out the form below, and I'll get back to you within 48 hours.
+                        {content.subtitle}
                     </p>
                 </div>
 
@@ -20,12 +54,12 @@ const Contact: React.FC = () => {
                     <div className="w-full lg:w-2/3 bg-white dark:bg-[#1a262d] p-6 md:p-10 rounded-3xl shadow-sm">
                         <form 
                             target="_blank" 
-                            action="https://formsubmit.co/neurothrivecoach@gmail.com" 
+                            action={formAction}
                             method="POST"
                             className="flex flex-col gap-6"
                         >
                             {/* Hidden Configuration Fields for FormSubmit */}
-                            <input type="hidden" name="_subject" value="New Contact Form Submission" />
+                            <input type="hidden" name="_subject" value={content.form_subject} />
                             <input type="hidden" name="_captcha" value="false" />
                             <input type="hidden" name="_template" value="table" />
 
@@ -85,16 +119,16 @@ const Contact: React.FC = () => {
                                 <p className="font-bold text-[#111518] dark:text-white">Direct Email</p>
                             </div>
                             <p className="text-sm text-[#637c88] dark:text-slate-400">Prefer not to use forms?</p>
-                            <a className="text-primary font-medium hover:underline break-all" href="mailto:info@neurothrivecoach.co.uk">info@neurothrivecoach.co.uk</a>
+                            <a className="text-primary font-medium hover:underline break-all" href={`mailto:${content.direct_email}`}>{content.direct_email}</a>
                         </div>
 
                         <div className="flex flex-col gap-4 p-6">
-                            <h3 className="text-xl font-bold text-[#111518] dark:text-white">Before you ask...</h3>
+                            <h3 className="text-xl font-bold text-[#111518] dark:text-white">{content.pre_faq_title}</h3>
                             <p className="text-[#637c88] dark:text-slate-400 leading-relaxed">
-                                I've compiled a list of common questions about my coaching style, pricing, and insurance. Checking here first might save you time!
+                                {content.pre_faq_body}
                             </p>
                             <Link to="/services" className="flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all">
-                                View Frequently Asked Questions
+                                {content.pre_faq_link_text}
                                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
                             </Link>
                         </div>
@@ -102,9 +136,9 @@ const Contact: React.FC = () => {
                             <div className="flex items-start gap-3">
                                 <span className="material-symbols-outlined text-primary mt-1">verified_user</span>
                                 <div>
-                                    <h4 className="font-bold text-[#111518] dark:text-white mb-1">Privacy First</h4>
+                                    <h4 className="font-bold text-[#111518] dark:text-white mb-1">{content.privacy_title}</h4>
                                     <p className="text-sm text-[#637c88] dark:text-slate-400">
-                                        Your information is safe. I am the only one who reads these emails, and I treat them with strict confidentiality.
+                                        {content.privacy_body}
                                     </p>
                                 </div>
                             </div>

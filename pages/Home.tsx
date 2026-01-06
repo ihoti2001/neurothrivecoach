@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { buildBookingUrl, getHomePage, getSiteSettings, HomePage, SiteSettings, Testimonial } from '../src/lib/sanityQueries';
-import { buildCanonical, buildOgImage, buildTitle } from '../src/lib/seo';
+import { buildCanonical, buildOgImage, buildTitle, buildWebPageJsonLd, toJsonLd } from '../src/lib/seo';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -84,6 +84,12 @@ const Home: React.FC = () => {
     const pageDescription = content.hero_subheadline;
     const canonicalUrl = buildCanonical('/');
     const ogImage = buildOgImage(heroImageUrl);
+    const pageJsonLd = buildWebPageJsonLd({
+        name: pageTitle,
+        description: pageDescription,
+        url: canonicalUrl,
+        pageType: 'WebPage',
+    });
 
     const handleBooking = () => {
         navigate('/services');
@@ -142,6 +148,7 @@ const Home: React.FC = () => {
                 <meta name="twitter:title" content={pageTitle} />
                 <meta name="twitter:description" content={pageDescription} />
                 <meta name="twitter:image" content={ogImage} />
+                <script type="application/ld+json">{toJsonLd(pageJsonLd)}</script>
             </Helmet>
             <section className="w-full max-w-[1280px] px-4 md:px-10 py-12 md:py-20">
                 <div className="@container">

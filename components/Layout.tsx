@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useLocation } from 'react-router-dom';
 import { buildBookingUrl, getSiteSettings, SiteSettings } from '../src/lib/sanityQueries';
+import { buildOrganizationJsonLd, buildWebsiteJsonLd, toJsonLd } from '../src/lib/seo';
 
 const isExternalLink = (href: string) => /^https?:\/\//i.test(href);
 
@@ -223,6 +225,26 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     return (
         <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-text-main dark:text-white">
+            <Helmet>
+                <script type="application/ld+json">
+                    {toJsonLd(
+                        buildOrganizationJsonLd({
+                            name: settings?.siteName,
+                            url: 'https://neurothrivecoach.co.uk',
+                            logoUrl: getImageUrl(settings?.logo) || 'https://neurothrivecoach.co.uk/logo.png',
+                            sameAs: (settings?.socialLinks || []).map((item) => item.href),
+                        }),
+                    )}
+                </script>
+                <script type="application/ld+json">
+                    {toJsonLd(
+                        buildWebsiteJsonLd({
+                            name: settings?.siteName,
+                            url: 'https://neurothrivecoach.co.uk',
+                        }),
+                    )}
+                </script>
+            </Helmet>
             <Header settings={settings} />
             <main className="flex flex-col flex-1 w-full items-center">
                 {children}

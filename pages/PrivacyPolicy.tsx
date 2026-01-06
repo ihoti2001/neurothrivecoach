@@ -1,12 +1,18 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { buildCanonical, buildOgImage, buildTitle } from '../src/lib/seo';
+import { buildCanonical, buildOgImage, buildTitle, buildWebPageJsonLd, toJsonLd } from '../src/lib/seo';
 
 const PrivacyPolicy: React.FC = () => {
     const pageTitle = buildTitle('Privacy Policy');
     const pageDescription = 'Read the Neuro Thrive Coach privacy policy and how we handle personal data.';
     const canonicalUrl = buildCanonical('/privacy-policy');
     const ogImage = buildOgImage();
+    const pageJsonLd = buildWebPageJsonLd({
+        name: pageTitle,
+        description: pageDescription,
+        url: canonicalUrl,
+        pageType: 'WebPage',
+    });
 
     return (
         <div className="flex-grow layout-container flex flex-col items-center py-12 md:py-20 px-4 md:px-10">
@@ -23,6 +29,7 @@ const PrivacyPolicy: React.FC = () => {
                 <meta name="twitter:title" content={pageTitle} />
                 <meta name="twitter:description" content={pageDescription} />
                 <meta name="twitter:image" content={ogImage} />
+                <script type="application/ld+json">{toJsonLd(pageJsonLd)}</script>
             </Helmet>
             <div className="max-w-4xl w-full flex flex-col gap-8">
                 <div className="flex flex-col gap-4">

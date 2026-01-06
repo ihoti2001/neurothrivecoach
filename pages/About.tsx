@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { buildBookingUrl, getAboutPage, getSiteSettings, AboutPage, SiteSettings } from '../src/lib/sanityQueries';
-import { buildCanonical, buildOgImage, buildTitle } from '../src/lib/seo';
+import { buildCanonical, buildOgImage, buildTitle, buildWebPageJsonLd, toJsonLd } from '../src/lib/seo';
 
 const About: React.FC = () => {
     const navigate = useNavigate();
@@ -110,6 +110,12 @@ Since then, I've devoted my career to understanding the neuroscience of ADHD. I 
     const pageDescription = content.intro_text;
     const canonicalUrl = buildCanonical('/about');
     const ogImage = buildOgImage(heroImageUrl);
+    const pageJsonLd = buildWebPageJsonLd({
+        name: pageTitle,
+        description: pageDescription,
+        url: canonicalUrl,
+        pageType: 'AboutPage',
+    });
 
     const credentialItems = pageContent?.credentials?.length
         ? pageContent.credentials
@@ -167,6 +173,7 @@ Since then, I've devoted my career to understanding the neuroscience of ADHD. I 
                 <meta name="twitter:title" content={pageTitle} />
                 <meta name="twitter:description" content={pageDescription} />
                 <meta name="twitter:image" content={ogImage} />
+                <script type="application/ld+json">{toJsonLd(pageJsonLd)}</script>
             </Helmet>
             <section className="w-full max-w-7xl px-4 md:px-10 py-16 md:py-24">
                 <div className="@container">

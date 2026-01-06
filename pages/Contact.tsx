@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { getContactPage, ContactPage } from '../src/lib/sanityQueries';
-import { buildCanonical, buildOgImage, buildTitle } from '../src/lib/seo';
+import { buildCanonical, buildOgImage, buildTitle, buildWebPageJsonLd, toJsonLd } from '../src/lib/seo';
 
 const Contact: React.FC = () => {
     const [pageContent, setPageContent] = useState<ContactPage | null>(null);
@@ -64,6 +64,12 @@ const Contact: React.FC = () => {
     const pageDescription = content.subtitle;
     const canonicalUrl = buildCanonical('/contact');
     const ogImage = buildOgImage();
+    const pageJsonLd = buildWebPageJsonLd({
+        name: pageTitle,
+        description: pageDescription,
+        url: canonicalUrl,
+        pageType: 'ContactPage',
+    });
 
     return (
         <div className="flex-grow layout-container flex flex-col items-center py-8 md:py-12 px-4 md:px-10">
@@ -80,6 +86,7 @@ const Contact: React.FC = () => {
                 <meta name="twitter:title" content={pageTitle} />
                 <meta name="twitter:description" content={pageDescription} />
                 <meta name="twitter:image" content={ogImage} />
+                <script type="application/ld+json">{toJsonLd(pageJsonLd)}</script>
             </Helmet>
             <div className="layout-content-container flex flex-col max-w-[1080px] w-full flex-1 gap-10">
                 {/* Header Section */}

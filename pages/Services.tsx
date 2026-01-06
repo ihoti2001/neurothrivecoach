@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { buildBookingUrl, getServicesPage, getSiteSettings, ServicesPage, SiteSettings } from '../src/lib/sanityQueries';
-import { buildCanonical, buildOgImage, buildTitle } from '../src/lib/seo';
+import { buildCanonical, buildFaqJsonLd, buildOgImage, buildTitle, buildWebPageJsonLd, toJsonLd } from '../src/lib/seo';
 
 const Services: React.FC = () => {
     const [modalUrl, setModalUrl] = useState<string | null>(null);
@@ -137,6 +137,12 @@ const Services: React.FC = () => {
     const pageDescription = content.subtitle;
     const canonicalUrl = buildCanonical('/services');
     const ogImage = buildOgImage();
+    const pageJsonLd = buildWebPageJsonLd({
+        name: pageTitle,
+        description: pageDescription,
+        url: canonicalUrl,
+        pageType: 'WebPage',
+    });
 
     const defaultPricing = [
         {
@@ -247,6 +253,7 @@ const Services: React.FC = () => {
             { question: content.faq_3_q, answer: content.faq_3_a },
             { question: content.faq_4_q, answer: content.faq_4_a },
         ];
+    const faqJsonLd = buildFaqJsonLd(faqItems);
 
     const benefitGroups = pageContent?.benefitGroups?.length
         ? pageContent.benefitGroups
@@ -298,6 +305,10 @@ const Services: React.FC = () => {
                 <meta name="twitter:title" content={pageTitle} />
                 <meta name="twitter:description" content={pageDescription} />
                 <meta name="twitter:image" content={ogImage} />
+                <script type="application/ld+json">{toJsonLd(pageJsonLd)}</script>
+                {faqJsonLd ? (
+                    <script type="application/ld+json">{toJsonLd(faqJsonLd)}</script>
+                ) : null}
             </Helmet>
 
             {/* Header Section */}

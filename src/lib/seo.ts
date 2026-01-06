@@ -8,8 +8,8 @@ export function buildTitle(pageTitle?: string): string {
 
 export function buildCanonical(path: string): string {
   if (!path || path === '/') return `${BASE_URL}/`
-  const trimmed = path.startsWith('/') ? path.slice(1) : path
-  return `${BASE_URL}/#/${trimmed}`
+  const trimmed = path.startsWith('/') ? path : `/${path}`
+  return `${BASE_URL}${trimmed}`
 }
 
 export function buildOgImage(imageUrl?: string): string {

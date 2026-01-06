@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import About from './pages/About';
 import Services from './pages/Services';
@@ -24,7 +24,7 @@ const ScrollToTop = () => {
 
 const App: React.FC = () => {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Layout><Home /></Layout>} />
@@ -38,7 +38,7 @@ const App: React.FC = () => {
         <Route path="/booking-options" element={<BookingOptions />} />
         <Route path="/booking-calendar" element={<BookingCalendar />} />
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 };
 

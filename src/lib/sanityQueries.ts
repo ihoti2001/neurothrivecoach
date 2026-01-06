@@ -12,6 +12,7 @@ export type SiteSettings = {
   mainBookingPath?: string
   navItems?: {label: string; href: string}[]
   footerLinks?: {label: string; href: string}[]
+  socialLinks?: {label: string; href: string}[]
   footerCopyright?: string
 }
 
@@ -129,6 +130,7 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
     mainBookingPath,
     navItems,
     footerLinks,
+    socialLinks,
     footerCopyright
   }`
   return sanityClient.fetch<SiteSettings | null>(query)

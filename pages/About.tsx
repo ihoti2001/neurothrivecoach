@@ -1,11 +1,51 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { buildBookingUrl, getAboutPage, getSiteSettings, AboutPage, SiteSettings } from '../src/lib/sanityQueries';
 
 const About: React.FC = () => {
     const navigate = useNavigate();
+    const [pageContent, setPageContent] = useState<AboutPage | null>(null);
+    const [settings, setSettings] = useState<SiteSettings | null>(null);
 
+    useEffect(() => {
+        let isMounted = true;
+        const loadContent = async () => {
+            try {
+                const [page, siteSettings] = await Promise.all([getAboutPage(), getSiteSettings()]);
+                if (isMounted) {
+                    setPageContent(page);
+                    setSettings(siteSettings);
+                }
+            } catch (error) {
+                console.error('Failed to load about page content', error);
+            }
+        };
+        loadContent();
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    const primaryBookingUrl = buildBookingUrl(settings, pageContent?.heroPrimaryCtaPath);
+    const secondaryCtaHref = pageContent?.heroSecondaryCtaHref || '/services';
+    const secondaryIsExternal = /^https?:\/\//i.test(secondaryCtaHref);
     const handleBooking = () => {
+        if (primaryBookingUrl) {
+            if (/^https?:\/\//i.test(primaryBookingUrl)) {
+                window.location.assign(primaryBookingUrl);
+            } else {
+                navigate(primaryBookingUrl);
+            }
+            return;
+        }
         navigate('/services');
+    };
+
+    const getImageUrl = (value: any) => {
+        if (!value) return '';
+        if (typeof value === 'string') return value;
+        if (value?.asset?.url) return value.asset.url;
+        return value.url || value.src || '';
     };
 
     const defaults = {
@@ -50,14 +90,67 @@ Since then, I've devoted my career to understanding the neuroscience of ADHD. I 
     };
 
     // Merge defaults with pageContent fields to ensure all required fields exist
-    const content = { ...defaults };
+    const heroImageUrl = getImageUrl(pageContent?.heroImage) || defaults.hero_image;
+    const journeyImageUrl = getImageUrl(pageContent?.journeyImage) || defaults.journey_image;
+
+    const content = {
+        ...defaults,
+        hero_image: heroImageUrl,
+        headline: pageContent?.heroHeading || defaults.headline,
+        intro_text: pageContent?.heroBody || defaults.intro_text,
+        philosophy_subhead: defaults.philosophy_subhead,
+        philosophy_headline: pageContent?.philosophyHeading || defaults.philosophy_headline,
+        philosophy_intro: pageContent?.philosophyIntro || defaults.philosophy_intro,
+        pillar_1_title: pageContent?.philosophyPillars?.[0]?.title || defaults.pillar_1_title,
+        pillar_1_desc: pageContent?.philosophyPillars?.[0]?.body || defaults.pillar_1_desc,
+        pillar_2_title: pageContent?.philosophyPillars?.[1]?.title || defaults.pillar_2_title,
+        pillar_2_desc: pageContent?.philosophyPillars?.[1]?.body || defaults.pillar_2_desc,
+        pillar_3_title: pageContent?.philosophyPillars?.[2]?.title || defaults.pillar_3_title,
+        pillar_3_desc: pageContent?.philosophyPillars?.[2]?.body || defaults.pillar_3_desc,
+        journey_image: journeyImageUrl,
+        journey_title: pageContent?.journeyHeading || defaults.journey_title,
+        journey_text: pageContent?.journeyBody || defaults.journey_text,
+        credentials_title: pageContent?.credentialsHeading || defaults.credentials_title,
+    };
+
+    const credentialItems = pageContent?.credentials?.length
+        ? pageContent.credentials
+        : [
+            { title: defaults.cred_1_title, year: defaults.cred_1_year, body: defaults.cred_1_desc },
+            { title: defaults.cred_2_title, year: defaults.cred_2_year, body: defaults.cred_2_desc },
+            { title: defaults.cred_3_title, year: defaults.cred_3_year, body: defaults.cred_3_desc },
+        ];
+
+    const toParagraphs = (value: any) => {
+        if (!value) return [];
+        if (Array.isArray(value)) {
+            return value
+                .map((block) => {
+                    if (typeof block === 'string') return block;
+                    if (block?.children?.length) {
+                        return block.children.map((child: any) => child?.text || '').join('');
+                    }
+                    return '';
+                })
+                .filter((item) => item);
+        }
+        if (typeof value === 'string') {
+            return value.split('\n\n').filter((item) => item.trim() !== '');
+        }
+        return [];
+    };
+
+    const journeyParagraphs = toParagraphs(content.journey_text);
 
     // Helper to render journey text paragraphs which we might get as a single blob or HTML
     const renderJourneyText = () => {
         // Fallback for hardcoded string with newlines
-        return content.journey_text.split('\n\n').map((para: string, idx: number) => (
-            <p key={idx}>{para}</p>
-        ));
+        if (journeyParagraphs.length) {
+            return journeyParagraphs.map((para: string, idx: number) => (
+                <p key={idx}>{para}</p>
+            ));
+        }
+        return null;
     };
 
 
@@ -66,7 +159,7 @@ Since then, I've devoted my career to understanding the neuroscience of ADHD. I 
             <section className="w-full max-w-7xl px-4 md:px-10 py-16 md:py-24">
                 <div className="@container">
                     <div className="flex flex-col gap-10 md:flex-row md:items-center md:gap-16">
-                        <div className="w-full md:w-1/2 aspect-[4/5] md:aspect-square rounded-3xl bg-center bg-cover shadow-lg" style={{ backgroundImage: `url('${content.hero_image}')` }}>
+                        <div className="w-full md:w-1/2 aspect-[4/5] md:aspect-square rounded-3xl bg-center bg-cover shadow-lg" style={{ backgroundImage: `url('${getImageUrl(content.hero_image)}')` }}>
                         </div>
                         <div className="flex flex-col gap-6 md:w-1/2">
                             <div className="flex flex-col gap-4 text-left">
@@ -78,11 +171,21 @@ Since then, I've devoted my career to understanding the neuroscience of ADHD. I 
                             </div>
                             <div className="flex flex-wrap gap-4 pt-2">
                                 <button onClick={handleBooking} className="flex items-center justify-center rounded-lg h-12 px-6 bg-primary hover:bg-primary-dark transition-colors text-white text-base font-bold shadow-sm">
-                                    Book a Discovery Call
+                                    {pageContent?.heroPrimaryCtaLabel || 'Book a Discovery Call'}
                                 </button>
-                                <Link to="/services" className="flex items-center justify-center rounded-lg h-12 px-6 bg-transparent border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-text-light dark:text-white text-base font-medium">
-                                    View Services
-                                </Link>
+                                {secondaryIsExternal ? (
+                                    <a
+                                        href={secondaryCtaHref}
+                                        className="flex items-center justify-center rounded-lg h-12 px-6 bg-transparent border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-text-light dark:text-white text-base font-medium"
+                                        rel="noreferrer"
+                                    >
+                                        {pageContent?.heroSecondaryCtaLabel || 'View Services'}
+                                    </a>
+                                ) : (
+                                    <Link to={secondaryCtaHref} className="flex items-center justify-center rounded-lg h-12 px-6 bg-transparent border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-text-light dark:text-white text-base font-medium">
+                                        {pageContent?.heroSecondaryCtaLabel || 'View Services'}
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -142,7 +245,7 @@ Since then, I've devoted my career to understanding the neuroscience of ADHD. I 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-start">
                     <div className="md:col-span-4 lg:col-span-5 relative group">
                         <div className="absolute -inset-2 bg-primary/20 rounded-xl transform rotate-2 transition-transform group-hover:rotate-1"></div>
-                        <div className="relative w-full aspect-[3/4] rounded-3xl bg-cover bg-center shadow-sm" style={{ backgroundImage: `url('${content.journey_image}')` }}>
+                        <div className="relative w-full aspect-[3/4] rounded-3xl bg-cover bg-center shadow-sm" style={{ backgroundImage: `url('${getImageUrl(content.journey_image)}')` }}>
                         </div>
                     </div>
                     <div className="md:col-span-8 lg:col-span-7 flex flex-col gap-6">
@@ -160,24 +263,17 @@ Since then, I've devoted my career to understanding the neuroscience of ADHD. I 
                 <div className="max-w-3xl mx-auto px-4 md:px-10">
                     <h2 className="text-2xl md:text-3xl font-bold leading-tight mb-10 text-center dark:text-white">{content.credentials_title}</h2>
                     <div className="relative border-l-2 border-primary/20 ml-3 md:ml-0 pl-8 md:pl-10 space-y-10">
-                        <div className="relative">
-                            <div className="absolute -left-[41px] md:-left-[49px] top-1 size-6 rounded-full bg-primary border-4 border-white dark:border-background-dark"></div>
-                            <h3 className="text-xl font-bold text-text-light dark:text-white">{content.cred_1_title}</h3>
-                            <p className="text-sm text-primary font-medium mb-2">{content.cred_1_year}</p>
-                            <p className="text-text-muted-light dark:text-text-muted-dark">{content.cred_1_desc}</p>
-                        </div>
-                        <div className="relative">
-                            <div className="absolute -left-[41px] md:-left-[49px] top-1 size-6 rounded-full bg-primary/40 border-4 border-white dark:border-background-dark"></div>
-                            <h3 className="text-xl font-bold text-text-light dark:text-white">{content.cred_2_title}</h3>
-                            <p className="text-sm text-primary font-medium mb-2">{content.cred_2_year}</p>
-                            <p className="text-text-muted-light dark:text-text-muted-dark">{content.cred_2_desc}</p>
-                        </div>
-                        <div className="relative">
-                            <div className="absolute -left-[41px] md:-left-[49px] top-1 size-6 rounded-full bg-primary/20 border-4 border-white dark:border-background-dark"></div>
-                            <h3 className="text-xl font-bold text-text-light dark:text-white">{content.cred_3_title}</h3>
-                            <p className="text-sm text-primary font-medium mb-2">{content.cred_3_year}</p>
-                            <p className="text-text-muted-light dark:text-text-muted-dark">{content.cred_3_desc}</p>
-                        </div>
+                        {credentialItems.map((item, idx) => {
+                            const dotClass = idx === 0 ? 'bg-primary' : idx === 1 ? 'bg-primary/40' : 'bg-primary/20';
+                            return (
+                                <div key={`${item.title}-${idx}`} className="relative">
+                                    <div className={`absolute -left-[41px] md:-left-[49px] top-1 size-6 rounded-full ${dotClass} border-4 border-white dark:border-background-dark`}></div>
+                                    <h3 className="text-xl font-bold text-text-light dark:text-white">{item.title}</h3>
+                                    {item.year ? <p className="text-sm text-primary font-medium mb-2">{item.year}</p> : null}
+                                    {item.body ? <p className="text-text-muted-light dark:text-text-muted-dark">{item.body}</p> : null}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </section>

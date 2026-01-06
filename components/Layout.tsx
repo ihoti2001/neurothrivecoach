@@ -1,11 +1,32 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { buildBookingUrl, getSiteSettings, SiteSettings } from '../src/lib/sanityQueries';
 
-const Header: React.FC = () => {
+const isExternalLink = (href: string) => /^https?:\/\//i.test(href);
+
+const getImageUrl = (value: any) => {
+    if (!value) return '';
+    if (typeof value === 'string') return value;
+    if (value?.asset?.url) return value.asset.url;
+    return value.url || value.src || '';
+};
+
+const Header: React.FC<{ settings: SiteSettings | null }> = ({ settings }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const location = useLocation();
 
     const isActive = (path: string) => location.pathname === path;
+    const bookingUrl = buildBookingUrl(settings, settings?.mainBookingPath);
+    const navItems = settings?.navItems?.length
+        ? settings.navItems
+        : [
+            { label: 'Home', href: '/' },
+            { label: 'About', href: '/about' },
+            { label: 'Services', href: '/services' },
+            { label: 'Contact', href: '/contact' },
+        ];
+    const logoUrl = getImageUrl(settings?.logo) || '/logo.png';
+    const siteName = settings?.siteName || 'Neuro Thrive Coach';
 
     return (
         <div className="sticky top-0 z-50 w-full bg-white/95 dark:bg-background-dark/95 backdrop-blur-sm shadow-sm transition-all duration-300">
@@ -14,24 +35,46 @@ const Header: React.FC = () => {
                     <header className="flex items-center justify-between whitespace-nowrap gap-4">
                         <Link to="/" className="flex items-center gap-3 shrink-0">
                             <img
-                                src="/logo.png"
-                                alt="Neuro Thrive Coach"
+                                src={logoUrl}
+                                alt={siteName}
                                 className="h-12 md:h-16 w-auto object-contain"
                             />
                         </Link>
                         <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
                             <nav className="flex items-center gap-8">
-                                <Link to="/" className={`text-lg font-bold leading-normal transition-colors ${isActive('/') ? 'text-primary' : 'text-text-main dark:text-gray-300 hover:text-primary'}`}>Home</Link>
-                                <Link to="/about" className={`text-lg font-bold leading-normal transition-colors ${isActive('/about') ? 'text-primary' : 'text-text-main dark:text-gray-300 hover:text-primary'}`}>About</Link>
-                                <Link to="/services" className={`text-lg font-bold leading-normal transition-colors ${isActive('/services') ? 'text-primary' : 'text-text-main dark:text-gray-300 hover:text-primary'}`}>Services</Link>
-                                <Link to="/contact" className={`text-lg font-bold leading-normal transition-colors ${isActive('/contact') ? 'text-primary' : 'text-text-main dark:text-gray-300 hover:text-primary'}`}>Contact</Link>
+                                {navItems.map((item) => {
+                                    const href = item.href || '/';
+                                    const activeClass = isActive(href) ? 'text-primary' : 'text-text-main dark:text-gray-300 hover:text-primary';
+                                    if (isExternalLink(href)) {
+                                        return (
+                                            <a key={href} href={href} className={`text-lg font-bold leading-normal transition-colors ${activeClass}`} rel="noreferrer">
+                                                {item.label}
+                                            </a>
+                                        );
+                                    }
+                                    return (
+                                        <Link key={href} to={href} className={`text-lg font-bold leading-normal transition-colors ${activeClass}`}>
+                                            {item.label}
+                                        </Link>
+                                    );
+                                })}
                             </nav>
-                            <Link
-                                to="/services"
-                                className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-primary hover:bg-primary-dark transition-colors text-white text-lg font-bold leading-normal tracking-[0.015em]"
-                            >
-                                <span className="truncate">Book Session</span>
-                            </Link>
+                            {bookingUrl ? (
+                                <a
+                                    href={bookingUrl}
+                                    className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-primary hover:bg-primary-dark transition-colors text-white text-lg font-bold leading-normal tracking-[0.015em]"
+                                    rel="noreferrer"
+                                >
+                                    <span className="truncate">Book Session</span>
+                                </a>
+                            ) : (
+                                <Link
+                                    to="/services"
+                                    className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-primary hover:bg-primary-dark transition-colors text-white text-lg font-bold leading-normal tracking-[0.015em]"
+                                >
+                                    <span className="truncate">Book Session</span>
+                                </Link>
+                            )}
                         </div>
                         <div className="md:hidden flex items-center">
                             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-text-main dark:text-white">
@@ -42,17 +85,50 @@ const Header: React.FC = () => {
                     {/* Simple Mobile Menu Overlay */}
                     {mobileMenuOpen && (
                         <div className="md:hidden absolute top-full left-0 w-full bg-white dark:bg-background-dark p-4 flex flex-col gap-4 shadow-lg animate-slide-in z-50">
-                            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white">Home</Link>
-                            <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white">About</Link>
-                            <Link to="/services" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white">Services</Link>
-                            <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white">Contact</Link>
-                            <button
-                                data-cal-link="neurothrivecoach/25min"
-                                onClick={() => setMobileMenuOpen(false)}
-                                className="bg-primary text-white text-center py-3 rounded-lg font-bold text-lg"
-                            >
-                                Book Session
-                            </button>
+                            {navItems.map((item) => {
+                                const href = item.href || '/';
+                                if (isExternalLink(href)) {
+                                    return (
+                                        <a
+                                            key={href}
+                                            href={href}
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white"
+                                            rel="noreferrer"
+                                        >
+                                            {item.label}
+                                        </a>
+                                    );
+                                }
+                                return (
+                                    <Link
+                                        key={href}
+                                        to={href}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="text-lg font-bold p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded dark:text-white"
+                                    >
+                                        {item.label}
+                                    </Link>
+                                );
+                            })}
+                            {bookingUrl ? (
+                                <a
+                                    href={bookingUrl}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="bg-primary text-white text-center py-3 rounded-lg font-bold text-lg"
+                                    rel="noreferrer"
+                                >
+                                    Book Session
+                                </a>
+                            ) : (
+                                <Link
+                                    to="/services"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="bg-primary text-white text-center py-3 rounded-lg font-bold text-lg"
+                                >
+                                    Book Session
+                                </Link>
+                            )}
                         </div>
                     )}
                 </div>
@@ -61,21 +137,45 @@ const Header: React.FC = () => {
     );
 };
 
-const Footer: React.FC = () => (
-    <footer className="w-full bg-white dark:bg-[#162228] mt-auto border-t border-gray-100 dark:border-gray-800">
+const Footer: React.FC<{ settings: SiteSettings | null }> = ({ settings }) => {
+    const footerLinks = settings?.footerLinks?.length
+        ? settings.footerLinks
+        : [
+            { label: 'Privacy Policy', href: '/privacy-policy' },
+            { label: 'Terms of Service', href: '/terms-of-service' },
+            { label: 'Contact', href: '/contact' },
+        ];
+    const logoUrl = getImageUrl(settings?.logo) || '/logo.png';
+    const siteName = settings?.siteName || 'Neuro Thrive Coach';
+    const footerText = settings?.footerCopyright || '(c) 2024 Neuro Thrive Coach. All rights reserved.';
+
+    return (
+        <footer className="w-full bg-white dark:bg-[#162228] mt-auto border-t border-gray-100 dark:border-gray-800">
         <div className="w-full max-w-[1280px] px-4 md:px-10 py-12 mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                 <Link to="/" className="flex items-center gap-3">
                     <img
-                        src="/logo.png"
-                        alt="Neuro Thrive Coach"
+                        src={logoUrl}
+                        alt={siteName}
                         className="h-10 md:h-12 w-auto object-contain"
                     />
                 </Link>
                 <div className="flex gap-8 flex-wrap justify-center">
-                    <Link to="/privacy-policy" className="text-text-muted dark:text-gray-400 hover:text-primary text-sm font-medium">Privacy Policy</Link>
-                    <Link to="/terms-of-service" className="text-text-muted dark:text-gray-400 hover:text-primary text-sm font-medium">Terms of Service</Link>
-                    <Link to="/contact" className="text-text-muted dark:text-gray-400 hover:text-primary text-sm font-medium">Contact</Link>
+                    {footerLinks.map((item) => {
+                        const href = item.href || '/';
+                        if (isExternalLink(href)) {
+                            return (
+                                <a key={href} href={href} className="text-text-muted dark:text-gray-400 hover:text-primary text-sm font-medium" rel="noreferrer">
+                                    {item.label}
+                                </a>
+                            );
+                        }
+                        return (
+                            <Link key={href} to={href} className="text-text-muted dark:text-gray-400 hover:text-primary text-sm font-medium">
+                                {item.label}
+                            </Link>
+                        );
+                    })}
                 </div>
                 <div className="flex gap-4">
                     <a className="text-text-muted dark:text-gray-400 hover:text-primary transition-colors" href="#" aria-label="TikTok">
@@ -96,20 +196,41 @@ const Footer: React.FC = () => (
                 </div>
             </div>
             <div className="mt-8 text-center text-xs text-text-muted dark:text-gray-500">
-                (c) 2024 Neuro Thrive Coach. All rights reserved.
+                {footerText}
             </div>
         </div>
     </footer>
-);
+    );
+};
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [settings, setSettings] = useState<SiteSettings | null>(null);
+
+    useEffect(() => {
+        let isMounted = true;
+        const loadSettings = async () => {
+            try {
+                const data = await getSiteSettings();
+                if (isMounted) {
+                    setSettings(data);
+                }
+            } catch (error) {
+                console.error('Failed to load site settings', error);
+            }
+        };
+        loadSettings();
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
     return (
         <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-text-main dark:text-white">
-            <Header />
+            <Header settings={settings} />
             <main className="flex flex-col flex-1 w-full items-center">
                 {children}
             </main>
-            <Footer />
+            <Footer settings={settings} />
         </div>
     );
 };

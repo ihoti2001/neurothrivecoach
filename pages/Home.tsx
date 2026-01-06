@@ -1,12 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { buildBookingUrl, getHomePage, getSiteSettings, HomePage, SiteSettings, Testimonial } from '../src/lib/sanityQueries';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
+    const [pageContent, setPageContent] = useState<HomePage | null>(null);
+    const [settings, setSettings] = useState<SiteSettings | null>(null);
 
-    const handleBooking = () => {
-        navigate('/services');
-    };
+    useEffect(() => {
+        let isMounted = true;
+        const loadContent = async () => {
+            try {
+                const [page, siteSettings] = await Promise.all([getHomePage(), getSiteSettings()]);
+                if (isMounted) {
+                    setPageContent(page);
+                    setSettings(siteSettings);
+                }
+            } catch (error) {
+                console.error('Failed to load home page content', error);
+            }
+        };
+        loadContent();
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     // Default content (Fallback)
     const defaults = {
@@ -39,8 +57,39 @@ const Home: React.FC = () => {
         client_3_image: "https://i.pravatar.cc/150?img=5"
     };
 
+    const getImageUrl = (value: any) => {
+        if (!value) return '';
+        if (typeof value === 'string') return value;
+        if (value?.asset?.url) return value.asset.url;
+        return value.url || value.src || '';
+    };
+
+    const heroImageUrl = getImageUrl(pageContent?.heroImage) || defaults.hero_image;
+
     // Merge defaults with pageContent fields to ensure all required fields exist
-    const content = { ...defaults };
+    const content = {
+        ...defaults,
+        hero_headline: pageContent?.heroHeading || defaults.hero_headline,
+        hero_subheadline: pageContent?.heroBody || defaults.hero_subheadline,
+        hero_cta_text: pageContent?.heroCtaLabel || defaults.hero_cta_text,
+        hero_image: heroImageUrl,
+        intro_headline: pageContent?.helpHeading || defaults.intro_headline,
+        intro_text: pageContent?.helpIntro || defaults.intro_text,
+        clients_headline: pageContent?.clientStoriesHeading || defaults.clients_headline,
+    };
+
+    const heroBookingUrl = buildBookingUrl(settings, pageContent?.heroCtaPath);
+    const handleBooking = () => {
+        if (heroBookingUrl) {
+            if (/^https?:\/\//i.test(heroBookingUrl)) {
+                window.location.assign(heroBookingUrl);
+            } else {
+                navigate(heroBookingUrl);
+            }
+            return;
+        }
+        navigate('/services');
+    };
 
     // Optional: Show a loading spinner if you want to wait for CMS before showing anything.
     // For better UX, we might just show the default immediately while loading, or a skeleton.
@@ -54,20 +103,31 @@ const Home: React.FC = () => {
         { title: content.service_3_title, desc: content.service_3_desc, icon: 'self_improvement' }
     ];
 
-    const servicesCards = defaultServices;
+    const helpCards = pageContent?.helpCards?.length ? pageContent.helpCards : null;
+    const servicesCards = helpCards
+        ? helpCards.map((card, idx) => ({
+            title: card.title,
+            desc: card.body,
+            icon: ['psychology', 'schedule', 'self_improvement'][idx % 3],
+        }))
+        : defaultServices;
 
-    const defaultTestimonials = [
+    const defaultTestimonials: Array<{ client_name: string; rating: number; image: string; quote: string }> = [
         { client_name: content.client_1_name, rating: 5, image: content.client_1_image, quote: content.client_1_quote },
         { client_name: content.client_2_name, rating: 5, image: content.client_2_image, quote: content.client_2_quote },
         { client_name: content.client_3_name, rating: 5, image: content.client_3_image, quote: content.client_3_quote }
     ];
-    const testimonialItems = defaultTestimonials;
-
-    const getImageUrl = (value: any) => {
-        if (!value) return '';
-        if (typeof value === 'string') return value;
-        return value.url || value.src || '';
-    };
+    const featuredTestimonials = pageContent?.featuredTestimonials?.length
+        ? pageContent.featuredTestimonials
+        : null;
+    const testimonialItems = featuredTestimonials
+        ? featuredTestimonials.map((item: Testimonial) => ({
+            client_name: item.name,
+            rating: item.rating || 5,
+            image: item.avatar,
+            quote: item.quote,
+        }))
+        : defaultTestimonials;
 
     return (
         <>
@@ -88,7 +148,7 @@ const Home: React.FC = () => {
                             </div>
                         </div>
                         <div className="w-full md:w-1/2 flex justify-center md:justify-end">
-                            <div aria-label="Calm and organized workspace with natural light" className="w-full max-w-[500px] aspect-[4/3] bg-gray-100 dark:bg-gray-800 rounded-3xl overflow-hidden relative shadow-xl" role="img" style={{ backgroundImage: `url('${content.hero_image}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                            <div aria-label="Calm and organized workspace with natural light" className="w-full max-w-[500px] aspect-[4/3] bg-gray-100 dark:bg-gray-800 rounded-3xl overflow-hidden relative shadow-xl" role="img" style={{ backgroundImage: `url('${getImageUrl(content.hero_image)}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                                 <div className="absolute inset-0 bg-primary/10 mix-blend-overlay"></div>
                             </div>
                         </div>

@@ -1,23 +1,36 @@
 import React, { useEffect, useState } from 'react';
+import { buildBookingUrl, getServicesPage, getSiteSettings, ServicesPage, SiteSettings } from '../src/lib/sanityQueries';
 
 const Services: React.FC = () => {
-    const [singleSessionUrl, setSingleSessionUrl] = useState('');
-    const [kickstarterUrl, setKickstarterUrl] = useState('');
-    const [transformationUrl, setTransformationUrl] = useState('');
-    const [discoveryUrl, setDiscoveryUrl] = useState('');
     const [modalUrl, setModalUrl] = useState<string | null>(null);
+    const [pageContent, setPageContent] = useState<ServicesPage | null>(null);
+    const [settings, setSettings] = useState<SiteSettings | null>(null);
 
     useEffect(() => {
-        // Slugs for the Cal.com embed
-        setDiscoveryUrl('https://app.cal.eu/neurothrivecoach/25min?overlayCalendar=true');
-        setSingleSessionUrl('https://app.cal.eu/neurothrivecoach/45min?overlayCalendar=true');
-        setKickstarterUrl('https://app.cal.eu/neurothrivecoach/4-session-package?recurringEventCount=4&overlayCalendar=true');
-        setTransformationUrl('https://app.cal.eu/neurothrivecoach/6-session-package?recurringEventCount=4&overlayCalendar=true');
-
-        // Cal.com buttons now use onClick handlers
-
+        let isMounted = true;
+        const loadContent = async () => {
+            try {
+                const [page, siteSettings] = await Promise.all([getServicesPage(), getSiteSettings()]);
+                if (isMounted) {
+                    setPageContent(page);
+                    setSettings(siteSettings);
+                }
+            } catch (error) {
+                console.error('Failed to load services page content', error);
+            }
+        };
+        loadContent();
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
+    const fallbackBookingUrls = [
+        'https://app.cal.eu/neurothrivecoach/25min?overlayCalendar=true',
+        'https://app.cal.eu/neurothrivecoach/45min?overlayCalendar=true',
+        'https://app.cal.eu/neurothrivecoach/4-session-package?recurringEventCount=4&overlayCalendar=true',
+        'https://app.cal.eu/neurothrivecoach/6-session-package?recurringEventCount=4&overlayCalendar=true',
+    ];
 
     const defaults = {
         title: "Services & Pricing",
@@ -107,7 +120,16 @@ const Services: React.FC = () => {
     };
 
     // Merge defaults with pageContent fields to ensure all required fields exist
-    const content = { ...defaults };
+    const content = {
+        ...defaults,
+        title: pageContent?.heading || defaults.title,
+        subtitle: pageContent?.intro || defaults.subtitle,
+        banner_text: pageContent?.undecidedText || defaults.banner_text,
+        expect_title: pageContent?.expectHeading || defaults.expect_title,
+        delivery_title: pageContent?.deliveryHeading || defaults.delivery_title,
+        benefit_title: pageContent?.benefitHeading || defaults.benefit_title,
+        faq_title: pageContent?.faqHeading || defaults.faq_title,
+    };
 
     const defaultPricing = [
         {
@@ -147,31 +169,95 @@ const Services: React.FC = () => {
         }
     ];
 
-    const pricingItems = defaultPricing;
-    const sessionSteps = [
-        { title: content.expect_1_title, description: content.expect_1_text },
-        { title: content.expect_2_title, description: content.expect_2_text },
-        { title: content.expect_3_title, description: content.expect_3_text }
-    ];
+    const pricingItems = pageContent?.packages?.length
+        ? pageContent.packages.map((pkg, idx) => ({
+            title: pkg.title,
+            price: pkg.price,
+            price_old: pkg.oldPrice,
+            duration: pkg.duration,
+            badge: pkg.badge,
+            features: pkg.bullets || [],
+            cta_text: pkg.ctaLabel,
+            booking_url: buildBookingUrl(settings, pkg.bookingPath) || fallbackBookingUrls[idx] || fallbackBookingUrls[0],
+            is_featured: !!pkg.badge,
+        }))
+        : defaultPricing.map((item, idx) => ({
+            ...item,
+            booking_url: fallbackBookingUrls[idx] || fallbackBookingUrls[0],
+        }));
+
+    const sessionSteps = pageContent?.expectSteps?.length
+        ? pageContent.expectSteps.map((step) => ({
+            title: step.title,
+            description: step.body,
+        }))
+        : [
+            { title: content.expect_1_title, description: content.expect_1_text },
+            { title: content.expect_2_title, description: content.expect_2_text },
+            { title: content.expect_3_title, description: content.expect_3_text },
+        ];
 
     const deliveryIcons = ['videocam', 'location_on', 'schedule', 'security'];
-    const deliveryItems = [
-        { title: content.delivery_1_title, description: content.delivery_1_text, icon: deliveryIcons[0] },
-        { title: content.delivery_2_title, description: content.delivery_2_text, icon: deliveryIcons[1] },
-        { title: content.delivery_3_title, description: content.delivery_3_text, icon: deliveryIcons[2] },
-        { title: content.delivery_4_title, description: content.delivery_4_text, icon: deliveryIcons[3] }
-    ];
+    const deliveryItems = pageContent?.deliveryOptions?.length
+        ? pageContent.deliveryOptions.map((option, idx) => ({
+            title: option.title,
+            description: option.body,
+            icon: deliveryIcons[idx % deliveryIcons.length],
+        }))
+        : [
+            { title: content.delivery_1_title, description: content.delivery_1_text, icon: deliveryIcons[0] },
+            { title: content.delivery_2_title, description: content.delivery_2_text, icon: deliveryIcons[1] },
+            { title: content.delivery_3_title, description: content.delivery_3_text, icon: deliveryIcons[2] },
+            { title: content.delivery_4_title, description: content.delivery_4_text, icon: deliveryIcons[3] },
+        ];
 
-    const faqItems = [
-        { question: content.faq_1_q, answer: content.faq_1_a },
-        { question: content.faq_2_q, answer: content.faq_2_a },
-        { question: content.faq_3_q, answer: content.faq_3_a },
-        { question: content.faq_4_q, answer: content.faq_4_a }
-    ];
+    const portableTextToString = (value: any) => {
+        if (!value) return '';
+        if (typeof value === 'string') return value;
+        if (Array.isArray(value)) {
+            return value
+                .map((block) => {
+                    if (typeof block === 'string') return block;
+                    if (block?.children?.length) {
+                        return block.children.map((child: any) => child?.text || '').join('');
+                    }
+                    return '';
+                })
+                .filter((item) => item)
+                .join('\n\n');
+        }
+        return '';
+    };
 
-    const renderList = (text: string) => {
-        if (!text || typeof text !== 'string') return null;
-        return text.split('\n').filter(item => item.trim() !== '').map((item, idx) => (
+    const faqItems = pageContent?.faqs?.length
+        ? pageContent.faqs.map((item) => ({
+            question: item.question,
+            answer: portableTextToString(item.answer),
+        }))
+        : [
+            { question: content.faq_1_q, answer: content.faq_1_a },
+            { question: content.faq_2_q, answer: content.faq_2_a },
+            { question: content.faq_3_q, answer: content.faq_3_a },
+            { question: content.faq_4_q, answer: content.faq_4_a },
+        ];
+
+    const benefitGroups = pageContent?.benefitGroups?.length
+        ? pageContent.benefitGroups
+        : [
+            { title: content.benefit_1_title, bullets: content.benefit_1_list.split('\n') },
+            { title: content.benefit_2_title, bullets: content.benefit_2_list.split('\n') },
+        ];
+
+    const normalizeList = (value: string | string[]) => {
+        if (Array.isArray(value)) return value.filter((item) => item.trim() !== '');
+        if (!value || typeof value !== 'string') return [];
+        return value.split('\n').filter(item => item.trim() !== '');
+    };
+
+    const renderList = (value: string | string[]) => {
+        const items = normalizeList(value);
+        if (!items.length) return null;
+        return items.map((item, idx) => (
             <li key={idx} className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
                 <span className="material-symbols-outlined text-primary text-[20px] shrink-0">check</span>
                 <span>{item}</span>
@@ -179,9 +265,10 @@ const Services: React.FC = () => {
         ));
     };
 
-    const renderBenefitList = (text: string) => {
-        if (!text || typeof text !== 'string') return null;
-        return text.split('\n').filter(item => item.trim() !== '').map((item, idx) => (
+    const renderBenefitList = (value: string | string[]) => {
+        const items = normalizeList(value);
+        if (!items.length) return null;
+        return items.map((item, idx) => (
             <li key={idx} className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
                 <span className="material-symbols-outlined text-[#ccfbf1] text-[20px] shrink-0 font-bold bg-white rounded-full">check</span>
                 <span>{item}</span>
@@ -210,7 +297,7 @@ const Services: React.FC = () => {
                         const priceOld = item.price_old || item.old_price || '';
                         const priceDetail = item.price_detail || '';
                         const badgeText = item.badge || (isFeatured ? 'Best Value' : '');
-                        const ctaUrl = [discoveryUrl, singleSessionUrl, kickstarterUrl, transformationUrl][idx] || singleSessionUrl;
+                        const ctaUrl = item.booking_url || fallbackBookingUrls[idx] || fallbackBookingUrls[0];
                         const cardClass = isFeatured
                             ? "bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-md border-2 border-primary/20 flex flex-col h-full relative transform lg:-translate-y-2"
                             : "bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col h-full hover:shadow-md transition-shadow";
@@ -306,18 +393,14 @@ const Services: React.FC = () => {
                 <div className="max-w-5xl mx-auto px-4">
                     <h2 className="text-3xl font-bold text-center mb-12 text-[#111518] dark:text-white">{content.benefit_title}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="bg-white dark:bg-surface-dark p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                            <h3 className="text-xl font-bold text-primary mb-6">{content.benefit_1_title}</h3>
-                            <ul className="space-y-4">
-                                {renderBenefitList(content.benefit_1_list)}
-                            </ul>
-                        </div>
-                        <div className="bg-white dark:bg-surface-dark p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                            <h3 className="text-xl font-bold text-primary mb-6">{content.benefit_2_title}</h3>
-                            <ul className="space-y-4">
-                                {renderBenefitList(content.benefit_2_list)}
-                            </ul>
-                        </div>
+                        {benefitGroups.map((group, idx) => (
+                            <div key={`${group.title}-${idx}`} className="bg-white dark:bg-surface-dark p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+                                <h3 className="text-xl font-bold text-primary mb-6">{group.title}</h3>
+                                <ul className="space-y-4">
+                                    {renderBenefitList(group.bullets || [])}
+                                </ul>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

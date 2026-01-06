@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { buildBookingUrl, getServicesPage, getSiteSettings, ServicesPage, SiteSettings } from '../src/lib/sanityQueries';
+import { buildCanonical, buildOgImage, buildTitle } from '../src/lib/seo';
 
 const Services: React.FC = () => {
     const [modalUrl, setModalUrl] = useState<string | null>(null);
@@ -130,6 +132,11 @@ const Services: React.FC = () => {
         benefit_title: pageContent?.benefitHeading || defaults.benefit_title,
         faq_title: pageContent?.faqHeading || defaults.faq_title,
     };
+
+    const pageTitle = buildTitle(content.title);
+    const pageDescription = content.subtitle;
+    const canonicalUrl = buildCanonical('/services');
+    const ogImage = buildOgImage();
 
     const defaultPricing = [
         {
@@ -278,6 +285,20 @@ const Services: React.FC = () => {
 
     return (
         <div className="w-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-sans">
+            <Helmet>
+                <title>{pageTitle}</title>
+                <meta name="description" content={pageDescription} />
+                <link rel="canonical" href={canonicalUrl} />
+                <meta property="og:title" content={pageTitle} />
+                <meta property="og:description" content={pageDescription} />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={canonicalUrl} />
+                <meta property="og:image" content={ogImage} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={pageTitle} />
+                <meta name="twitter:description" content={pageDescription} />
+                <meta name="twitter:image" content={ogImage} />
+            </Helmet>
 
             {/* Header Section */}
             <div className="w-full pt-16 pb-12 px-4 text-center">

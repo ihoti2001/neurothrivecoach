@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { getContactPage, ContactPage } from '../src/lib/sanityQueries';
+import { buildCanonical, buildOgImage, buildTitle } from '../src/lib/seo';
 
 const Contact: React.FC = () => {
     const [pageContent, setPageContent] = useState<ContactPage | null>(null);
@@ -58,8 +60,27 @@ const Contact: React.FC = () => {
     const formAction = `https://formsubmit.co/${content.form_email || defaults.form_email}`;
     const faqLinkIsExternal = /^https?:\/\//i.test(content.pre_faq_link_href);
 
+    const pageTitle = buildTitle(content.title);
+    const pageDescription = content.subtitle;
+    const canonicalUrl = buildCanonical('/contact');
+    const ogImage = buildOgImage();
+
     return (
         <div className="flex-grow layout-container flex flex-col items-center py-8 md:py-12 px-4 md:px-10">
+            <Helmet>
+                <title>{pageTitle}</title>
+                <meta name="description" content={pageDescription} />
+                <link rel="canonical" href={canonicalUrl} />
+                <meta property="og:title" content={pageTitle} />
+                <meta property="og:description" content={pageDescription} />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={canonicalUrl} />
+                <meta property="og:image" content={ogImage} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={pageTitle} />
+                <meta name="twitter:description" content={pageDescription} />
+                <meta name="twitter:image" content={ogImage} />
+            </Helmet>
             <div className="layout-content-container flex flex-col max-w-[1080px] w-full flex-1 gap-10">
                 {/* Header Section */}
                 <div className="flex flex-col gap-4 max-w-2xl">

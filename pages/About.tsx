@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { buildBookingUrl, getAboutPage, getSiteSettings, AboutPage, SiteSettings } from '../src/lib/sanityQueries';
+import { buildCanonical, buildOgImage, buildTitle } from '../src/lib/seo';
 
 const About: React.FC = () => {
     const navigate = useNavigate();
@@ -104,6 +106,11 @@ Since then, I've devoted my career to understanding the neuroscience of ADHD. I 
         credentials_title: pageContent?.credentialsHeading || defaults.credentials_title,
     };
 
+    const pageTitle = buildTitle('About');
+    const pageDescription = content.intro_text;
+    const canonicalUrl = buildCanonical('/about');
+    const ogImage = buildOgImage(heroImageUrl);
+
     const credentialItems = pageContent?.credentials?.length
         ? pageContent.credentials
         : [
@@ -147,6 +154,20 @@ Since then, I've devoted my career to understanding the neuroscience of ADHD. I 
 
     return (
         <div className="flex flex-col items-center w-full flex-1">
+            <Helmet>
+                <title>{pageTitle}</title>
+                <meta name="description" content={pageDescription} />
+                <link rel="canonical" href={canonicalUrl} />
+                <meta property="og:title" content={pageTitle} />
+                <meta property="og:description" content={pageDescription} />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={canonicalUrl} />
+                <meta property="og:image" content={ogImage} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={pageTitle} />
+                <meta name="twitter:description" content={pageDescription} />
+                <meta name="twitter:image" content={ogImage} />
+            </Helmet>
             <section className="w-full max-w-7xl px-4 md:px-10 py-16 md:py-24">
                 <div className="@container">
                     <div className="flex flex-col gap-10 md:flex-row md:items-center md:gap-16">

@@ -1,8 +1,29 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
+import { buildCanonical, buildOgImage, buildTitle } from '../src/lib/seo';
 
 const PrivacyPolicy: React.FC = () => {
+    const pageTitle = buildTitle('Privacy Policy');
+    const pageDescription = 'Read the Neuro Thrive Coach privacy policy and how we handle personal data.';
+    const canonicalUrl = buildCanonical('/privacy-policy');
+    const ogImage = buildOgImage();
+
     return (
         <div className="flex-grow layout-container flex flex-col items-center py-12 md:py-20 px-4 md:px-10">
+            <Helmet>
+                <title>{pageTitle}</title>
+                <meta name="description" content={pageDescription} />
+                <link rel="canonical" href={canonicalUrl} />
+                <meta property="og:title" content={pageTitle} />
+                <meta property="og:description" content={pageDescription} />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={canonicalUrl} />
+                <meta property="og:image" content={ogImage} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={pageTitle} />
+                <meta name="twitter:description" content={pageDescription} />
+                <meta name="twitter:image" content={ogImage} />
+            </Helmet>
             <div className="max-w-4xl w-full flex flex-col gap-8">
                 <div className="flex flex-col gap-4">
                     <h1 className="text-[#111518] dark:text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">

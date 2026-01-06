@@ -16,7 +16,6 @@ const Header: React.FC<{ settings: SiteSettings | null }> = ({ settings }) => {
     const location = useLocation();
 
     const isActive = (path: string) => location.pathname === path;
-    const bookingUrl = buildBookingUrl(settings, settings?.mainBookingPath);
     const navItems = settings?.navItems?.length
         ? settings.navItems
         : [
@@ -59,22 +58,12 @@ const Header: React.FC<{ settings: SiteSettings | null }> = ({ settings }) => {
                                     );
                                 })}
                             </nav>
-                            {bookingUrl ? (
-                                <a
-                                    href={bookingUrl}
-                                    className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-primary hover:bg-primary-dark transition-colors text-white text-lg font-bold leading-normal tracking-[0.015em]"
-                                    rel="noreferrer"
-                                >
-                                    <span className="truncate">Book Session</span>
-                                </a>
-                            ) : (
-                                <Link
-                                    to="/services"
-                                    className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-primary hover:bg-primary-dark transition-colors text-white text-lg font-bold leading-normal tracking-[0.015em]"
-                                >
-                                    <span className="truncate">Book Session</span>
-                                </Link>
-                            )}
+                            <Link
+                                to="/services"
+                                className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-primary hover:bg-primary-dark transition-colors text-white text-lg font-bold leading-normal tracking-[0.015em]"
+                            >
+                                <span className="truncate">Book Session</span>
+                            </Link>
                         </div>
                         <div className="md:hidden flex items-center">
                             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-text-main dark:text-white">
@@ -111,24 +100,13 @@ const Header: React.FC<{ settings: SiteSettings | null }> = ({ settings }) => {
                                     </Link>
                                 );
                             })}
-                            {bookingUrl ? (
-                                <a
-                                    href={bookingUrl}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="bg-primary text-white text-center py-3 rounded-lg font-bold text-lg"
-                                    rel="noreferrer"
-                                >
-                                    Book Session
-                                </a>
-                            ) : (
-                                <Link
-                                    to="/services"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="bg-primary text-white text-center py-3 rounded-lg font-bold text-lg"
-                                >
-                                    Book Session
-                                </Link>
-                            )}
+                            <Link
+                                to="/services"
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="bg-primary text-white text-center py-3 rounded-lg font-bold text-lg"
+                            >
+                                Book Session
+                            </Link>
                         </div>
                     )}
                 </div>

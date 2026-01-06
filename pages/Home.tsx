@@ -78,16 +78,7 @@ const Home: React.FC = () => {
         clients_headline: pageContent?.clientStoriesHeading || defaults.clients_headline,
     };
 
-    const heroBookingUrl = buildBookingUrl(settings, pageContent?.heroCtaPath);
     const handleBooking = () => {
-        if (heroBookingUrl) {
-            if (/^https?:\/\//i.test(heroBookingUrl)) {
-                window.location.assign(heroBookingUrl);
-            } else {
-                navigate(heroBookingUrl);
-            }
-            return;
-        }
         navigate('/services');
     };
 

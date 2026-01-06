@@ -26,18 +26,9 @@ const About: React.FC = () => {
         };
     }, []);
 
-    const primaryBookingUrl = buildBookingUrl(settings, pageContent?.heroPrimaryCtaPath);
-    const secondaryCtaHref = pageContent?.heroSecondaryCtaHref || '/services';
-    const secondaryIsExternal = /^https?:\/\//i.test(secondaryCtaHref);
+    const secondaryCtaHref = '/services';
+    const secondaryIsExternal = false;
     const handleBooking = () => {
-        if (primaryBookingUrl) {
-            if (/^https?:\/\//i.test(primaryBookingUrl)) {
-                window.location.assign(primaryBookingUrl);
-            } else {
-                navigate(primaryBookingUrl);
-            }
-            return;
-        }
         navigate('/services');
     };
 

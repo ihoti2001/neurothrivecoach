@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { getContactPage, ContactPage } from '../src/lib/sanityQueries';
-import { buildCanonical, buildOgImage, buildTitle, buildWebPageJsonLd, toJsonLd } from '../src/lib/seo';
+import { buildCanonical, buildOgImage, buildTitle, buildWebPageJsonLd, isHeadlessBrowser, toJsonLd } from '../src/lib/seo';
 
 const Contact: React.FC = () => {
     const [pageContent, setPageContent] = useState<ContactPage | null>(null);
 
     useEffect(() => {
+        if (isHeadlessBrowser()) return;
         let isMounted = true;
         const loadContent = async () => {
             try {

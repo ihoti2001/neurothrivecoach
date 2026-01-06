@@ -38,39 +38,41 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "primary": "#338173",
-            "primary-dark": "#2a6b60",
-            "background-light": "#fffaf6",
-            "background-dark": "#111c21",
-            "text-main": "#000000",
-            "text-light": "#000000",
-            "text-muted": "#000000",
-            "text-muted-light": "#000000",
-            "text-muted-dark": "#ffffff",
-            "text-sub": "#000000",
-            "surface-light": "#ffffff",
-            "surface-dark": "#1e2730",
-          },
-          fontFamily: {
-            "display": ["Inter", "sans-serif"],
-            "sans": ["Inter", "sans-serif"],
-          },
-          animation: {
-            'slide-in': 'slideIn 0.2s ease-out forwards',
-          },
-          keyframes: {
-            slideIn: {
-              '0%': { opacity: '0', transform: 'translateY(-10px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' },
+    if (window.tailwind) {
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#338173",
+              "primary-dark": "#2a6b60",
+              "background-light": "#fffaf6",
+              "background-dark": "#111c21",
+              "text-main": "#000000",
+              "text-light": "#000000",
+              "text-muted": "#000000",
+              "text-muted-light": "#000000",
+              "text-muted-dark": "#ffffff",
+              "text-sub": "#000000",
+              "surface-light": "#ffffff",
+              "surface-dark": "#1e2730",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"],
+              "sans": ["Inter", "sans-serif"],
+            },
+            animation: {
+              'slide-in': 'slideIn 0.2s ease-out forwards',
+            },
+            keyframes: {
+              slideIn: {
+                '0%': { opacity: '0', transform: 'translateY(-10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
             }
-          }
+          },
         },
-      },
+      }
     }
   </script>
   <style>
@@ -174,7 +176,8 @@
   </script>
   <!-- Cal element-click embed code begins -->
   <script type="text/javascript">
-      (function (C, A, L) {
+      if (typeof navigator === "undefined" || (!/HeadlessChrome/i.test(navigator.userAgent) && navigator.webdriver !== true)) {
+        (function (C, A, L) {
         let p = function (a, ar) { a.q.push(ar); };
         let d = C.document;
         C.Cal = C.Cal || function () {
@@ -198,18 +201,19 @@
         script.type = "text/javascript";
         script.src = A;
         head.appendChild(script);
-      })(window, "https://app.cal.eu/embed/embed.js", "init");
+        })(window, "https://app.cal.eu/embed/embed.js", "init");
 
-    Cal("init", { origin: "https://app.cal.eu" });
-    Cal("ui", { "styles": { "branding": { "brandColor": "#338173" } }, "hideEventTypeDetails": false, "layout": "month_view" });
+        Cal("init", { origin: "https://app.cal.eu" });
+        Cal("ui", { "styles": { "branding": { "brandColor": "#338173" } }, "hideEventTypeDetails": false, "layout": "month_view" });
 
     // Listen for success and redirect
-    Cal("on", {
-      action: "BOOKING_SUCCESSFUL",
-      callback: (e) => {
-        window.location.href = "https://neurothrivecoach.co.uk";
+        Cal("on", {
+          action: "BOOKING_SUCCESSFUL",
+          callback: (e) => {
+            window.location.href = "https://neurothrivecoach.co.uk";
+          }
+        });
       }
-    });
   </script>
   <!-- Cal element-click embed code ends -->
 </head>

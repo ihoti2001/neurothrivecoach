@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { buildBookingUrl, getAboutPage, getSiteSettings, AboutPage, SiteSettings } from '../src/lib/sanityQueries';
-import { buildCanonical, buildOgImage, buildTitle, buildWebPageJsonLd, toJsonLd } from '../src/lib/seo';
+import { buildCanonical, buildOgImage, buildTitle, buildWebPageJsonLd, isHeadlessBrowser, toJsonLd } from '../src/lib/seo';
 
 const About: React.FC = () => {
     const navigate = useNavigate();
@@ -10,6 +10,7 @@ const About: React.FC = () => {
     const [settings, setSettings] = useState<SiteSettings | null>(null);
 
     useEffect(() => {
+        if (isHeadlessBrowser()) return;
         let isMounted = true;
         const loadContent = async () => {
             try {

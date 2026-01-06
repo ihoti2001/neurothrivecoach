@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useLocation } from 'react-router-dom';
 import { buildBookingUrl, getSiteSettings, SiteSettings } from '../src/lib/sanityQueries';
-import { buildOrganizationJsonLd, buildWebsiteJsonLd, toJsonLd } from '../src/lib/seo';
+import { buildOrganizationJsonLd, buildWebsiteJsonLd, isHeadlessBrowser, toJsonLd } from '../src/lib/seo';
 
 const isExternalLink = (href: string) => /^https?:\/\//i.test(href);
 
@@ -206,6 +206,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [settings, setSettings] = useState<SiteSettings | null>(null);
 
     useEffect(() => {
+        if (isHeadlessBrowser()) return;
         let isMounted = true;
         const loadSettings = async () => {
             try {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { buildBookingUrl, getServicesPage, getSiteSettings, ServicesPage, SiteSettings } from '../src/lib/sanityQueries';
-import { buildCanonical, buildFaqJsonLd, buildOgImage, buildTitle, buildWebPageJsonLd, toJsonLd } from '../src/lib/seo';
+import { buildCanonical, buildFaqJsonLd, buildOgImage, buildTitle, buildWebPageJsonLd, isHeadlessBrowser, toJsonLd } from '../src/lib/seo';
 
 const Services: React.FC = () => {
     const [modalUrl, setModalUrl] = useState<string | null>(null);
@@ -9,6 +9,7 @@ const Services: React.FC = () => {
     const [settings, setSettings] = useState<SiteSettings | null>(null);
 
     useEffect(() => {
+        if (isHeadlessBrowser()) return;
         let isMounted = true;
         const loadContent = async () => {
             try {

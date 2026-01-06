@@ -20,6 +20,11 @@ export function toJsonLd(data: unknown): string {
   return JSON.stringify(data)
 }
 
+export function isHeadlessBrowser(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return /HeadlessChrome/i.test(navigator.userAgent) || navigator.webdriver === true
+}
+
 export function buildOrganizationJsonLd(options: {
   name?: string
   url?: string

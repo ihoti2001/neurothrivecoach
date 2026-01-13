@@ -1,12 +1,9 @@
-# Neuro Thrive Coach Website
+# Sanity Clean Content Studio
 
-Vite + React + TypeScript single-page app with Tailwind (CDN).
+Congratulations, you have now installed the Sanity Content Studio, an open-source real-time content editing environment connected to the Sanity backend.
 
-## Run Locally
+Now you can do the following things:
 
-1. Install dependencies:
-   `npm install`
-2. Create `.env` (or `.env.local`) with:
-   `VITE_CAL_API_KEY=...`
-3. Start dev server:
-   `npm run dev`
+- [Read “getting started” in the docs](https://www.sanity.io/docs/introduction/getting-started?utm_source=readme)
+- [Join the Sanity community](https://www.sanity.io/community/join?utm_source=readme)
+- [Extend and build plugins](https://www.sanity.io/docs/content-studio/extending?utm_source=readme)

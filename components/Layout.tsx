@@ -24,6 +24,7 @@ const Header: React.FC<{ settings: SiteSettings | null }> = ({ settings }) => {
             { label: 'Home', href: '/' },
             { label: 'About', href: '/about' },
             { label: 'Services', href: '/services' },
+            { label: 'Group Coaching', href: '/group-coaching' },
             { label: 'Contact', href: '/contact' },
         ];
     const logoUrl = getImageUrl(settings?.logo) || '/logo.png';

@@ -94,6 +94,27 @@ export type ServicesPage = {
   faqs?: FAQ[]
 }
 
+
+export type GroupCoachingPage = {
+  heading: string
+  intro?: string
+  heroImage?: any
+  groupHeading?: string
+  groupBody?: string
+  groupMinSize?: number
+  groupMaxSize?: number
+  groupHighlights?: string[]
+  deliveryHeading?: string
+  deliveryOptions?: DeliveryOption[]
+  corporateHeading?: string
+  corporateBody?: string
+  corporateHighlights?: string[]
+  ctaLabel?: string
+  ctaHref?: string
+  faqHeading?: string
+  faqs?: FAQ[]
+}
+
 export type ContactPage = {
   heroHeading: string
   heroBody: string
@@ -201,6 +222,34 @@ export async function getServicesPage(): Promise<ServicesPage | null> {
     }
   }`
   return sanityClient.fetch<ServicesPage | null>(query)
+}
+
+
+export async function getGroupCoachingPage(): Promise<GroupCoachingPage | null> {
+  const query = `*[_type == "groupCoachingPage"][0]{
+    heading,
+    intro,
+    heroImage{asset->{url}},
+    groupHeading,
+    groupBody,
+    groupMinSize,
+    groupMaxSize,
+    groupHighlights,
+    deliveryHeading,
+    deliveryOptions,
+    corporateHeading,
+    corporateBody,
+    corporateHighlights,
+    ctaLabel,
+    ctaHref,
+    faqHeading,
+    faqs[]->{
+      _id,
+      question,
+      answer
+    }
+  }`
+  return sanityClient.fetch<GroupCoachingPage | null>(query)
 }
 
 export async function getContactPage(): Promise<ContactPage | null> {
